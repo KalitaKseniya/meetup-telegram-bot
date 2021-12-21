@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using meetup_telegram_bot.Data.DbEntities;
+using meetup_telegram_bot.Infrastructure.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -14,29 +12,72 @@ namespace meetup_telegram_bot.Controllers
     public class BotController : ControllerBase
     {
         private readonly TelegramBotClient client; 
-        private const string TelegramBotToken = "TelegramBotToken";
+        private readonly IFeedbackRepository _feedbackRepository;
 
-        public BotController(IConfiguration configuration)
+        private const string TelegramBotToken = "TelegramBotToken";
+        private const string AdminUserName = "AdminUserName";
+        private const string AdminChatId = "AdminChatId";
+        
+        private readonly string adminUserName;
+        private readonly long adminChatId;
+
+        public BotController(IConfiguration configuration, IFeedbackRepository feedbackRepository)
         {
             var token = configuration.GetSection("environmentVariables").GetValue<string>(TelegramBotToken);
             if (string.IsNullOrEmpty(token))
             {
-                throw new Exception("Not found telegram bot token in configuration");
+                throw new Exception("Not found telegram bot token in configuration.");
             }
             client = new TelegramBotClient(token);
+
+            adminUserName = configuration.GetSection("environmentVariables").GetValue<string>(AdminUserName);
+            if (string.IsNullOrEmpty(adminUserName))
+            {
+                throw new Exception("Not found admin user name in configuration.");
+            }
+            
+            adminChatId = configuration.GetSection("environmentVariables").GetValue<long>(AdminChatId);
+            if (adminChatId == 0)
+            {
+                throw new Exception("Not found admin chat id in configuration.");
+            }
+
+            _feedbackRepository = feedbackRepository;
         }
         
         [HttpPost]
-        public async void Post([FromBody] Update update)
+        public async Task Post([FromBody] Update update)
         {
             if (update == null)
             {
                 throw new ArgumentNullException(nameof(update));
             }
             var message = update.Message;
+            if (message.Chat.Id != adminChatId)
+            {
+                await client.SendTextMessageAsync(message.Chat.Id, $"Бот находится в стадии разработки, по вопросам пишите, пожалуйста: {adminUserName}.").ConfigureAwait(false);
+                return;
+            }
+            
             if (message?.Type == MessageType.Text)
             {
-                await client.SendTextMessageAsync(message.Chat.Id, message.Text);
+                var feedback = new FeedbackDbEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Date = DateTime.Now.Date,
+                    FutureProposal = "There will be future proposal.",
+                    GeneralFeedback = message.Text,
+                    Time = DateTime.Now.TimeOfDay
+                };
+                try
+                {
+                    await _feedbackRepository.CreateAsync(feedback).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    await client.SendTextMessageAsync(message.Chat.Id, $"Exception: {ex.Message}").ConfigureAwait(false);
+                }
+                await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш фидбэк был сохранен: {message.Text}").ConfigureAwait(false);
             }
         }
         
