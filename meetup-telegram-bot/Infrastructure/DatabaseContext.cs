@@ -16,7 +16,7 @@ namespace meetup_telegram_bot.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.ApplyConfiguration(new PresentationConfiguration());
+            //builder.ApplyConfiguration(new PresentationConfiguration());
             builder.Entity<PresentationDbEntity>(b => {
                 b.HasKey(p => p.Id);
                 b.ToTable("Presentations");
@@ -32,8 +32,7 @@ namespace meetup_telegram_bot.Infrastructure
 
             builder.Entity<QuestionDbEntity>(b => {
                 b.HasKey(c => c.Id);
-                b.Property(c => c.PresentationId)
-                 .IsRequired();
+                b.Property(c => c.PresentationId);
 
                 b.HasOne<PresentationDbEntity>()
                     .WithMany()
