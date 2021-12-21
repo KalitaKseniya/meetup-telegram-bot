@@ -29,7 +29,10 @@ namespace meetup_telegram_bot.Controllers
         [HttpPost]
         public async void Post([FromBody] Update update)
         {
-            if (update == null) return;
+            if (update == null)
+            {
+                throw new ArgumentNullException(nameof(update));
+            }
             var message = update.Message;
             if (message?.Type == MessageType.Text)
             {
