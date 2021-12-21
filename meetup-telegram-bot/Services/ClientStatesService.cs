@@ -39,5 +39,49 @@ namespace meetup_telegram_bot.Services
                 FeedbackGeneralFeedback = generalFeedback
             };
         }
+        
+        public void SetPresentationQuestion(long chatId, string questionText)
+        {
+            var userState = ClientStates[chatId].UserState;
+            
+            if (!ClientStates.ContainsKey(chatId) || (
+                userState != UserState.FirstPresentationQuestion &&  
+                userState != UserState.SecondPresentationQuestion &&
+                userState != UserState.ThirdPresentationQuestion &&
+                userState != UserState.OutOfPresentationQuestion)
+            )
+            {
+                throw new Exception("Error in model");
+            }
+
+            ClientStates[chatId] = new InputInfo
+            {
+                UserState = userState,
+                QuestionText = questionText
+            };
+        } 
+        
+        public void SetQuestionAuthorName(long chatId, string authorName)
+        {
+            var userState = ClientStates[chatId].UserState;
+            var questionText = ClientStates[chatId].QuestionText;
+
+            if (!ClientStates.ContainsKey(chatId) || (
+                userState != UserState.FirstPresentationQuestion &&  
+                userState != UserState.SecondPresentationQuestion &&
+                userState != UserState.ThirdPresentationQuestion &&
+                userState != UserState.OutOfPresentationQuestion)
+                || questionText == null)
+            {
+                throw new Exception("Error in model");
+            }
+
+            ClientStates[chatId] = new InputInfo
+            {
+                UserState = userState,
+                QuestionText = questionText,
+                QuestionAuthorName = authorName
+            };
+        }
     }
 }

@@ -18,6 +18,7 @@ builder.Services.AddDbContext<DatabaseContext>(opt =>
                     opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection")
                     ));
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddSingleton<ClientStatesService>();
 
 var app = builder.Build();

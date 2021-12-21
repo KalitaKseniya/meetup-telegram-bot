@@ -16,6 +16,7 @@ namespace meetup_telegram_bot.Controllers
     {
         private readonly TelegramBotClient client; 
         private readonly IFeedbackRepository _feedbackRepository;
+        private readonly IQuestionRepository _questionRepository;
         private readonly ClientStatesService _clientStatesService;
 
         private const string TelegramBotToken = "TelegramBotToken";
@@ -25,7 +26,8 @@ namespace meetup_telegram_bot.Controllers
         private readonly string adminUserName;
         private readonly long adminChatId;
 
-        public BotController(IConfiguration configuration, IFeedbackRepository feedbackRepository, ClientStatesService clientStates)
+        public BotController(IConfiguration configuration, IFeedbackRepository feedbackRepository, ClientStatesService clientStates,
+            IQuestionRepository questionRepository)
         {
             var token = configuration.GetSection("environmentVariables").GetValue<string>(TelegramBotToken);
             if (string.IsNullOrEmpty(token))
@@ -47,6 +49,7 @@ namespace meetup_telegram_bot.Controllers
             }
 
             _feedbackRepository = feedbackRepository;
+            _questionRepository = questionRepository;
             _clientStatesService = clientStates;
         }
         
@@ -81,21 +84,35 @@ namespace meetup_telegram_bot.Controllers
                     var message = update.Message;
                     if (_clientStatesService.ClientStates.ContainsKey(message.Chat.Id))
                     {
-                        if (_clientStatesService.ClientStates[message.Chat.Id].UserState == UserState.LeaveFeedback)
+                        switch (_clientStatesService.ClientStates[message.Chat.Id].UserState)
                         {
-                            if(_clientStatesService.ClientStates[message.Chat.Id].FeedbackGeneralFeedback == null)
-                            {
-                                await ProcessLeavingFeedback(message).ConfigureAwait(false);
-                            }
-                            else
-                            {
-                                await ProcessLeavingFeedbackFutureProposal(message).ConfigureAwait(false);
-                            }
-                        }
-                        else
-                        {
-                            //ToDo: implement 
-                            await client.SendTextMessageAsync(message.Chat.Id, $"Sorry a haven't been implemented yet.").ConfigureAwait(false);
+                            case UserState.LeaveFeedback:
+                                if (_clientStatesService.ClientStates[message.Chat.Id].FeedbackGeneralFeedback == null)
+                                {
+                                    await ProcessLeavingFeedback(message).ConfigureAwait(false);
+                                }
+                                else
+                                {
+                                    await ProcessLeavingFeedbackFutureProposal(message).ConfigureAwait(false);
+                                }
+                                break;
+                            case UserState.FirstPresentationQuestion:
+                            case UserState.SecondPresentationQuestion:
+                            case UserState.ThirdPresentationQuestion:
+                            case UserState.OutOfPresentationQuestion:
+                                if (_clientStatesService.ClientStates[message.Chat.Id].QuestionText == null)
+                                {
+                                    await ProcessPresentationQuestion(message).ConfigureAwait(false);
+                                }
+                                else
+                                {
+                                    await ProcessPresentationAuthorName(message).ConfigureAwait(false);
+                                }
+                                break;
+                            default:
+                                //ToDo: implement 
+                                await client.SendTextMessageAsync(message.Chat.Id, $"Sorry a haven't been implemented yet.").ConfigureAwait(false);
+                                break;
                         }
                     }
                     else 
@@ -131,10 +148,50 @@ namespace meetup_telegram_bot.Controllers
             _clientStatesService.ClientStates.Remove(message.Chat.Id);
         }
         
+        private async Task ProcessPresentationAuthorName(Message message)
+        {
+            var clientService = _clientStatesService.ClientStates[message.Chat.Id];
+            Guid presentationId = clientService.UserState switch
+            {
+                UserState.FirstPresentationQuestion => new Guid("f7cd069c-b314-45e3-9589-7796e45e5e01"),
+                UserState.SecondPresentationQuestion => new Guid("dacb7cdf-ad5a-4cd1-83d4-a02678fd1313"),
+                UserState.ThirdPresentationQuestion => new Guid("3a8bc096-dff2-4e31-b45a-010a47322836"),
+                UserState.OutOfPresentationQuestion => Guid.Empty,//ToDo: allow nulls
+                UserState.LeaveFeedback => throw new NotImplementedException(),
+                _ => throw new Exception("Invalid user state")
+            };
+            
+            var question = new QuestionDbEntity
+            {
+                Id = Guid.NewGuid(),
+                Date = DateTime.Now.Date,
+                Text = clientService.QuestionText,
+                AuthorName = message.Text,
+                PresentationId = presentationId,
+                Time = DateTime.Now.TimeOfDay
+            };
+            try
+            {
+                await _questionRepository.CreateAsync(question).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await client.SendTextMessageAsync(message.Chat.Id, $"Exception: {ex.Message}").ConfigureAwait(false);
+            }
+            await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш вопрос {question.Text} и никнейм {question.AuthorName} были сохранены", replyMarkup: GetButtons()).ConfigureAwait(false);
+            _clientStatesService.ClientStates.Remove(message.Chat.Id);
+        }
+        
         private async Task ProcessLeavingFeedback(Message message)
         {
             _clientStatesService.SetFeedback(message.Chat.Id, message.Text);
             await client.SendTextMessageAsync(message.Chat.Id, "Напишите предложения для будущих митапов!", replyMarkup: null).ConfigureAwait(false);
+        }
+        
+        private async Task ProcessPresentationQuestion(Message message)
+        {
+            _clientStatesService.SetPresentationQuestion(message.Chat.Id, message.Text);
+            await client.SendTextMessageAsync(message.Chat.Id, "Введите никнейм для ответа!", replyMarkup: null).ConfigureAwait(false);
         }
 
         //ToDo: add back to main menu button
