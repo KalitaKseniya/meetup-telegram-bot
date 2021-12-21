@@ -1,6 +1,7 @@
 using meetup_telegram_bot.Infrastructure;
 using meetup_telegram_bot.Infrastructure.Interfaces;
 using meetup_telegram_bot.Infrastructure.Repositories;
+using meetup_telegram_bot.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ builder.Services.AddDbContext<DatabaseContext>(opt =>
                     opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection")
                     ));
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+builder.Services.AddSingleton<ClientStatesService>();
 
 var app = builder.Build();
 

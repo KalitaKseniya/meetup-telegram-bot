@@ -1,9 +1,12 @@
-﻿using meetup_telegram_bot.Data.DbEntities;
+﻿using meetup_telegram_bot.Data;
+using meetup_telegram_bot.Data.DbEntities;
 using meetup_telegram_bot.Infrastructure.Interfaces;
+using meetup_telegram_bot.Services;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace meetup_telegram_bot.Controllers
 {
@@ -13,6 +16,7 @@ namespace meetup_telegram_bot.Controllers
     {
         private readonly TelegramBotClient client; 
         private readonly IFeedbackRepository _feedbackRepository;
+        private readonly ClientStatesService _clientStatesService;
 
         private const string TelegramBotToken = "TelegramBotToken";
         private const string AdminUserName = "AdminUserName";
@@ -21,7 +25,7 @@ namespace meetup_telegram_bot.Controllers
         private readonly string adminUserName;
         private readonly long adminChatId;
 
-        public BotController(IConfiguration configuration, IFeedbackRepository feedbackRepository)
+        public BotController(IConfiguration configuration, IFeedbackRepository feedbackRepository, ClientStatesService clientStates)
         {
             var token = configuration.GetSection("environmentVariables").GetValue<string>(TelegramBotToken);
             if (string.IsNullOrEmpty(token))
@@ -43,6 +47,7 @@ namespace meetup_telegram_bot.Controllers
             }
 
             _feedbackRepository = feedbackRepository;
+            _clientStatesService = clientStates;
         }
         
         [HttpPost]
@@ -53,38 +58,141 @@ namespace meetup_telegram_bot.Controllers
                 throw new ArgumentNullException(nameof(update));
             }
             var message = update.Message;
-            if (message.Chat.Id != adminChatId)
+            if (message?.Chat?.Id != null && message?.Chat?.Id != adminChatId)
             {
                 await client.SendTextMessageAsync(message.Chat.Id, $"Бот находится в стадии разработки, по вопросам пишите, пожалуйста: {adminUserName}.").ConfigureAwait(false);
                 return;
             }
             
-            if (message?.Type == MessageType.Text)
-            {
-                var feedback = new FeedbackDbEntity
-                {
-                    Id = Guid.NewGuid(),
-                    Date = DateTime.Now.Date,
-                    FutureProposal = "There will be future proposal.",
-                    GeneralFeedback = message.Text,
-                    Time = DateTime.Now.TimeOfDay
-                };
-                try
-                {
-                    await _feedbackRepository.CreateAsync(feedback).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    await client.SendTextMessageAsync(message.Chat.Id, $"Exception: {ex.Message}").ConfigureAwait(false);
-                }
-                await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш фидбэк был сохранен: {message.Text}").ConfigureAwait(false);
-            }
+            await ProcessUpdate(update);
         }
         
         [HttpGet]
         public string Get(string msg)
         {
            return msg;
+        }
+
+        private async Task ProcessUpdate(Update update)
+        {
+            switch (update.Type)
+            {
+                case UpdateType.Message:
+                    var message = update.Message;
+                    if (_clientStatesService.ClientStates.ContainsKey(message.Chat.Id))
+                    {
+                        if (_clientStatesService.ClientStates[message.Chat.Id].UserState == UserState.LeaveFeedback)
+                        {
+                            if(_clientStatesService.ClientStates[message.Chat.Id].FeedbackGeneralFeedback == null)
+                            {
+                                await ProcessLeavingFeedback(message).ConfigureAwait(false);
+                            }
+                            else
+                            {
+                                await ProcessLeavingFeedbackFutureProposal(message).ConfigureAwait(false);
+                            }
+                        }
+                        else
+                        {
+                            //ToDo: implement 
+                            await client.SendTextMessageAsync(message.Chat.Id, $"Sorry a haven't been implemented yet.").ConfigureAwait(false);
+                        }
+                    }
+                    else 
+                    {
+                        await ProcessMainKeyboard(message).ConfigureAwait(false);
+                    }
+                    
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+        
+        private async Task ProcessLeavingFeedbackFutureProposal(Message message)
+        {
+            var feedback = new FeedbackDbEntity
+            {
+                Id = Guid.NewGuid(),
+                Date = DateTime.Now.Date,
+                FutureProposal = message.Text,
+                GeneralFeedback = _clientStatesService.ClientStates[message.Chat.Id].FeedbackGeneralFeedback,
+                Time = DateTime.Now.TimeOfDay
+            };
+            try
+            {
+                await _feedbackRepository.CreateAsync(feedback).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await client.SendTextMessageAsync(message.Chat.Id, $"Exception: {ex.Message}").ConfigureAwait(false);
+            }
+            await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш фидбэк {feedback.GeneralFeedback} и предложения {feedback.FutureProposal} были сохранены", replyMarkup: GetButtons()).ConfigureAwait(false);
+            _clientStatesService.ClientStates.Remove(message.Chat.Id);
+        }
+        
+        private async Task ProcessLeavingFeedback(Message message)
+        {
+            _clientStatesService.SetFeedback(message.Chat.Id, message.Text);
+            await client.SendTextMessageAsync(message.Chat.Id, "Напишите предложения для будущих митапов!", replyMarkup: null).ConfigureAwait(false);
+        }
+
+        //ToDo: add back to main menu button
+        private async Task ProcessMainKeyboard(Message message)
+        {
+            const string text1 = "Пожалуйста, введите свой вопрос";
+            const string text2 = "Оставьте свой фидбэк";
+
+            switch (message.Text)
+            {
+                case MainKeyboard.FirstPresentationQuestion:
+                    _clientStatesService.SetUserState(message.Chat.Id, UserState.FirstPresentationQuestion);
+                    await client.SendTextMessageAsync(message.Chat.Id, "Кнопка 1 " + text1, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
+                    break;
+                case MainKeyboard.SecondPresentationQuestion:
+                    _clientStatesService.SetUserState(message.Chat.Id, UserState.SecondPresentationQuestion);
+                    await client.SendTextMessageAsync(message.Chat.Id, "Кнопка 2 " + text1, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
+                    break;
+                case MainKeyboard.ThirdPresentationQuestion:
+                    _clientStatesService.SetUserState(message.Chat.Id, UserState.ThirdPresentationQuestion);
+                    await client.SendTextMessageAsync(message.Chat.Id, "Кнопка 3 " + text1, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
+                    break;
+                case MainKeyboard.OutOfPresentationQuestion:
+                    _clientStatesService.SetUserState(message.Chat.Id, UserState.OutOfPresentationQuestion);
+                    await client.SendTextMessageAsync(message.Chat.Id, "Кнопка 0 " + text1, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
+                    break;
+                case MainKeyboard.LeaveFeedback:
+                    _clientStatesService.SetUserState(message.Chat.Id, UserState.LeaveFeedback);
+                    await client.SendTextMessageAsync(message.Chat.Id, text2, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
+                    break;
+                default:
+                    await client.SendTextMessageAsync(message.Chat.Id, "Пожалуйста, выберите пункт главного меню" + message.Text, replyMarkup: GetButtons()).ConfigureAwait(false);
+                    break;
+            }
+        }
+
+        private IReplyMarkup GetButtons()
+        {
+            return new ReplyKeyboardMarkup
+            (
+                new List<List<KeyboardButton>>
+                {
+                    new List<KeyboardButton>
+                    {
+                        new KeyboardButton(text: MainKeyboard.FirstPresentationQuestion),
+                        new KeyboardButton(text: MainKeyboard.SecondPresentationQuestion)
+                    },
+                    new List<KeyboardButton>
+                    {
+                        new KeyboardButton(text: MainKeyboard.ThirdPresentationQuestion),
+                        new KeyboardButton(text: MainKeyboard.OutOfPresentationQuestion)
+                    },
+                    new List<KeyboardButton>
+                    {
+                        new KeyboardButton(text: MainKeyboard.LeaveFeedback),
+                    }
+                }
+             );
         }
     }
 }
