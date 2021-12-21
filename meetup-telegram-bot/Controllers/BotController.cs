@@ -1,10 +1,8 @@
 ﻿using meetup_telegram_bot.Data;
 using meetup_telegram_bot.Data.DbEntities;
-using meetup_telegram_bot.Infrastructure;
 using meetup_telegram_bot.Infrastructure.Interfaces;
 using meetup_telegram_bot.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -20,7 +18,7 @@ namespace meetup_telegram_bot.Controllers
         private readonly IFeedbackRepository _feedbackRepository;
         private readonly IQuestionRepository _questionRepository;
         private readonly ClientStatesService _clientStatesService;
-        private readonly IHubContext<ChatHub, IChatHub> _hubContext;
+        private readonly INotificationService _notificationService;
 
         private const string TelegramBotToken = "TelegramBotToken";
         private const string AdminUserName = "AdminUserName";
@@ -34,7 +32,7 @@ namespace meetup_telegram_bot.Controllers
             IFeedbackRepository feedbackRepository, 
             ClientStatesService clientStates,
             IQuestionRepository questionRepository,
-            IHubContext<ChatHub, IChatHub> hubContext)
+            INotificationService notificationService)
         {
             var token = configuration.GetSection("environmentVariables").GetValue<string>(TelegramBotToken);
             if (string.IsNullOrEmpty(token))
@@ -58,7 +56,7 @@ namespace meetup_telegram_bot.Controllers
             _feedbackRepository = feedbackRepository;
             _questionRepository = questionRepository;
             _clientStatesService = clientStates;
-            _hubContext = hubContext;
+            _notificationService = notificationService;
         }
         
         [HttpPost]
@@ -73,11 +71,27 @@ namespace meetup_telegram_bot.Controllers
         }
         
         [HttpGet]
-        public async Task<string> Get(string msg)
+        public async Task<QuestionDbEntity> Get(string message)
         {
-            await _hubContext.Clients.All.Send(msg).ConfigureAwait(false);
+            var fakeFeedback = new FeedbackDbEntity
+            {
+                GeneralFeedback = message,
+                FutureProposal = "TEST PROPOSAL",
+                Date = DateTime.Now
+            };
 
-            return msg;
+            var fakeQuestion = new QuestionDbEntity
+            {
+                Text = "Do you love it?",
+                Date = DateTime.Now,
+                AuthorName = "Hanna",
+                PresentationId = new Guid("dacb7cdf-ad5a-4cd1-83d4-a02678fd1313")
+            };
+
+            await _notificationService.SendFeedbackAsync(fakeFeedback).ConfigureAwait(false);
+            await _notificationService.SendQuestionAsync(fakeQuestion).ConfigureAwait(false);
+
+            return fakeQuestion;
         }
 
         private async Task ProcessUpdate(Update update)
@@ -143,6 +157,7 @@ namespace meetup_telegram_bot.Controllers
             try
             {
                 await _feedbackRepository.CreateAsync(feedback).ConfigureAwait(false);
+                await _notificationService.SendFeedbackAsync(feedback).ConfigureAwait(false);
                 await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш фидбэк {feedback.GeneralFeedback} и предложения {feedback.FutureProposal} были сохранены", replyMarkup: GetButtons()).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -177,6 +192,7 @@ namespace meetup_telegram_bot.Controllers
             try
             {
                 await _questionRepository.CreateAsync(question).ConfigureAwait(false);
+                await _notificationService.SendQuestionAsync(question).ConfigureAwait(false);
                 await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш вопрос {question.Text} и никнейм {question.AuthorName} были сохранены", replyMarkup: GetButtons()).ConfigureAwait(false);
             }
             catch (Exception ex)

@@ -2,6 +2,7 @@ using meetup_telegram_bot.Infrastructure;
 using meetup_telegram_bot.Infrastructure.Interfaces;
 using meetup_telegram_bot.Infrastructure.Repositories;
 using meetup_telegram_bot.Services;
+using meetup_telegram_bot.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,7 @@ builder.Services.AddDbContext<DatabaseContext>(opt =>
 
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+builder.Services.AddSingleton<INotificationService, NotificationService>();
 builder.Services.AddSingleton<ClientStatesService>();
 
 builder.Services.AddSignalR();
