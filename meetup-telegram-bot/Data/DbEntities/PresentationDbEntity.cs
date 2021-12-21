@@ -1,6 +1,6 @@
 ﻿namespace meetup_telegram_bot.Data.DbEntities
 {
-    public class Presentation
+    public class PresentationDbEntity
     {
         public Guid Id { get; set; }
         public string SpeackerName { get; set; }

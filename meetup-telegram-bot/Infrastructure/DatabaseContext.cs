@@ -5,9 +5,9 @@ namespace meetup_telegram_bot.Infrastructure
 {
     public class DatabaseContext: DbContext
     {
-        public DbSet<Question> Questions { get; set; }
-        public DbSet<Feedback> Feedbacks { get; set; }
-        public DbSet<Presentation> Presentations { get; set; }
+        public DbSet<QuestionDbEntity> Questions { get; set; }
+        public DbSet<FeedbackDbEntity> Feedbacks { get; set; }
+        public DbSet<PresentationDbEntity> Presentations { get; set; }
 
         public DatabaseContext(DbContextOptions options) : base(options)
         {
@@ -15,12 +15,12 @@ namespace meetup_telegram_bot.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<Presentation>(b => {
+            builder.Entity<PresentationDbEntity>(b => {
                 b.HasKey(p => p.Id);
                 b.ToTable("Presentations");
             });
 
-            builder.Entity<Feedback>(b =>
+            builder.Entity<FeedbackDbEntity>(b =>
             {
                 b.HasKey(p => p.Id);
                 b.Property(c => c.Date).HasColumnType("date");
@@ -28,12 +28,12 @@ namespace meetup_telegram_bot.Infrastructure
                 b.ToTable("Feedbacks");
             });
 
-            builder.Entity<Question>(b => {
+            builder.Entity<QuestionDbEntity>(b => {
                 b.HasKey(c => c.Id);
                 b.Property(c => c.PresentationId)
                  .IsRequired();
 
-                b.HasOne<Presentation>()
+                b.HasOne<PresentationDbEntity>()
                     .WithMany()
                     .HasForeignKey(c => c.PresentationId);
                 b.Property(b => b.Time).HasColumnType("time");

@@ -1,12 +1,11 @@
 ﻿namespace meetup_telegram_bot.Data.DbEntities
 {
-    public class Question
+    public class FeedbackDbEntity
     {
         public Guid Id { get; set; }
         public DateTime Date { get; set; }
         public TimeSpan Time { get; set; }
-        public string Text { get; set; }
-        public Guid PresentationId { get; set; }
-        public string? AuthorName { get; set; }
+        public string GeneralFeedback { get; set; }
+        public string FutureProposal { get; set; }
     }
 }
