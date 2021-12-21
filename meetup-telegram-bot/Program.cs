@@ -12,14 +12,16 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 ConfigurationManager configuration = builder.Configuration;
 builder.Services.AddDbContext<DatabaseContext>(opt =>
-                    opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection")
-                    ));
+                    opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddSingleton<ClientStatesService>();
+
+builder.Services.AddSignalR();
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -32,8 +34,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+app.UseCors(builder => builder
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+               .SetIsOriginAllowed(origin => true)
+               .AllowCredentials());
 
-app.MapControllers();
+
+app.UseRouting();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapHub<ChatHub>("/chat");
+});
 
 app.Run();

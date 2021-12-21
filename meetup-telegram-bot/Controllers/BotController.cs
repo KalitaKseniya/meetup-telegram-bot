@@ -1,8 +1,10 @@
 ﻿using meetup_telegram_bot.Data;
 using meetup_telegram_bot.Data.DbEntities;
+using meetup_telegram_bot.Infrastructure;
 using meetup_telegram_bot.Infrastructure.Interfaces;
 using meetup_telegram_bot.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -18,6 +20,7 @@ namespace meetup_telegram_bot.Controllers
         private readonly IFeedbackRepository _feedbackRepository;
         private readonly IQuestionRepository _questionRepository;
         private readonly ClientStatesService _clientStatesService;
+        private readonly IHubContext<ChatHub, IChatHub> _hubContext;
 
         private const string TelegramBotToken = "TelegramBotToken";
         private const string AdminUserName = "AdminUserName";
@@ -26,8 +29,12 @@ namespace meetup_telegram_bot.Controllers
         private readonly string adminUserName;
         private readonly long adminChatId;
 
-        public BotController(IConfiguration configuration, IFeedbackRepository feedbackRepository, ClientStatesService clientStates,
-            IQuestionRepository questionRepository)
+        public BotController(
+            IConfiguration configuration, 
+            IFeedbackRepository feedbackRepository, 
+            ClientStatesService clientStates,
+            IQuestionRepository questionRepository,
+            IHubContext<ChatHub, IChatHub> hubContext)
         {
             var token = configuration.GetSection("environmentVariables").GetValue<string>(TelegramBotToken);
             if (string.IsNullOrEmpty(token))
@@ -51,6 +58,7 @@ namespace meetup_telegram_bot.Controllers
             _feedbackRepository = feedbackRepository;
             _questionRepository = questionRepository;
             _clientStatesService = clientStates;
+            _hubContext = hubContext;
         }
         
         [HttpPost]
@@ -60,19 +68,16 @@ namespace meetup_telegram_bot.Controllers
             {
                 throw new ArgumentNullException(nameof(update));
             }
-            var message = update.Message;
-            if (message?.Chat?.Id != null && message?.Chat?.Id != adminChatId)
-            {
-                await client.SendTextMessageAsync(message.Chat.Id, $"Бот находится в стадии разработки, по вопросам пишите, пожалуйста: {adminUserName}.").ConfigureAwait(false);
-            }
             
             await ProcessUpdate(update);
         }
         
         [HttpGet]
-        public string Get(string msg)
+        public async Task<string> Get(string msg)
         {
-           return msg;
+            await _hubContext.Clients.All.Send(msg).ConfigureAwait(false);
+
+            return msg;
         }
 
         private async Task ProcessUpdate(Update update)
