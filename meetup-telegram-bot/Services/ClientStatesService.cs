@@ -8,7 +8,6 @@ namespace meetup_telegram_bot.Services
         public UserState UserState { get; set; }
         public string FeedbackGeneralFeedback { get; set; }
         public string QuestionText { get; set; }
-        public string? QuestionAuthorName { get; set; }
     }
 
     public class ClientStatesService
@@ -60,28 +59,5 @@ namespace meetup_telegram_bot.Services
                 QuestionText = questionText
             };
         } 
-        
-        public void SetQuestionAuthorName(long chatId, string authorName)
-        {
-            var userState = ClientStates[chatId].UserState;
-            var questionText = ClientStates[chatId].QuestionText;
-
-            if (!ClientStates.ContainsKey(chatId) || (
-                userState != UserState.FirstPresentationQuestion &&  
-                userState != UserState.SecondPresentationQuestion &&
-                userState != UserState.ThirdPresentationQuestion &&
-                userState != UserState.OutOfPresentationQuestion)
-                || questionText == null)
-            {
-                throw new Exception("Error in model");
-            }
-
-            ClientStates[chatId] = new InputInfo
-            {
-                UserState = userState,
-                QuestionText = questionText,
-                QuestionAuthorName = authorName
-            };
-        }
     }
 }

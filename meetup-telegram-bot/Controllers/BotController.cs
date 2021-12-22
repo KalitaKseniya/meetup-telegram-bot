@@ -72,7 +72,16 @@ namespace meetup_telegram_bot.Controllers
             {
                 throw new ArgumentNullException(nameof(update));
             }
-           
+            var message = update.Message;
+            if (update.Type != UpdateType.Message)
+            {
+                return;
+            }
+            if (message.Chat.Id != adminChatId)
+            {
+                await client.SendTextMessageAsync(message.Chat.Id, $"Бот ушел в отпуск, подождите, не спамьте)").ConfigureAwait(false);
+                return;
+            }
             await ProcessUpdateAsync(update).ConfigureAwait(false);
         }
         
@@ -144,14 +153,7 @@ namespace meetup_telegram_bot.Controllers
                             case UserState.SecondPresentationQuestion:
                             case UserState.ThirdPresentationQuestion:
                             case UserState.OutOfPresentationQuestion:
-                                if (_clientStatesService.ClientStates[message.Chat.Id].QuestionText == null)
-                                {
-                                    await ProcessPresentationQuestion(message).ConfigureAwait(false);
-                                }
-                                else
-                                {
-                                    await ProcessPresentationAuthorName(message).ConfigureAwait(false);
-                                }
+                                await ProcessPresentationQuestion(message).ConfigureAwait(false);
                                 break;
                             default:
                                 //ToDo: implement 
@@ -194,8 +196,16 @@ namespace meetup_telegram_bot.Controllers
             _clientStatesService.ClientStates.Remove(message.Chat.Id);
         }
         
-        private async Task ProcessPresentationAuthorName(Message message)
+        private async Task ProcessLeavingFeedback(Message message)
         {
+            _clientStatesService.SetFeedback(message.Chat.Id, message.Text);
+            await client.SendTextMessageAsync(message.Chat.Id, "Напишите предложения для будущих митапов!", replyMarkup: null).ConfigureAwait(false);
+        }
+        
+        // Create question model, add it to database and send message on success to user
+        private async Task ProcessPresentationQuestion(Message message)
+        {
+            _clientStatesService.SetPresentationQuestion(message.Chat.Id, message.Text);
             var clientService = _clientStatesService.ClientStates[message.Chat.Id];
             Guid? presentationId = null;
             try
@@ -207,46 +217,26 @@ namespace meetup_telegram_bot.Controllers
                     UserState.ThirdPresentationQuestion => new Guid("3a8bc096-dff2-4e31-b45a-010a47322836"),
                     UserState.OutOfPresentationQuestion => null,
                     UserState.LeaveFeedback => throw new Exception($"Invalid user state = {clientService.UserState}"),
-                    _ =>  throw new Exception($"Invalid user state = {clientService.UserState}")
+                    _ => throw new Exception($"Invalid user state = {clientService.UserState}")
                 };
-            }
-            catch(Exception ex)
-            {
-                await client.SendTextMessageAsync(message.Chat.Id, $"Попробуйте еще раз", replyMarkup: GetButtons()).ConfigureAwait(false);
-            }
-
-            var question = new QuestionDbEntity
-            {
-                Id = Guid.NewGuid(),
-                Date = DateTime.Now.Date,
-                Text = clientService.QuestionText,
-                AuthorName = message.Text,
-                PresentationId = presentationId,
-                Time = DateTime.Now.TimeOfDay
-            };
-            try
-            {
+                var question = new QuestionDbEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Date = DateTime.Now.Date,
+                    Text = clientService.QuestionText,
+                    AuthorName = "There will be funny name",
+                    PresentationId = presentationId,
+                    Time = DateTime.Now.TimeOfDay
+                };
                 await _questionRepository.CreateAsync(question).ConfigureAwait(false);
                 await _notificationService.SendQuestionAsync(question).ConfigureAwait(false);
                 await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш вопрос {question.Text} и никнейм {question.AuthorName} были сохранены", replyMarkup: GetButtons()).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                await client.SendTextMessageAsync(message.Chat.Id, $"Exception: {ex.Message}").ConfigureAwait(false);
+                await client.SendTextMessageAsync(message.Chat.Id, $"Попробуйте еще раз", replyMarkup: GetButtons()).ConfigureAwait(false);
             }
             _clientStatesService.ClientStates.Remove(message.Chat.Id);
-        }
-        
-        private async Task ProcessLeavingFeedback(Message message)
-        {
-            _clientStatesService.SetFeedback(message.Chat.Id, message.Text);
-            await client.SendTextMessageAsync(message.Chat.Id, "Напишите предложения для будущих митапов!", replyMarkup: null).ConfigureAwait(false);
-        }
-        
-        private async Task ProcessPresentationQuestion(Message message)
-        {
-            _clientStatesService.SetPresentationQuestion(message.Chat.Id, message.Text);
-            await client.SendTextMessageAsync(message.Chat.Id, "Введите никнейм для ответа!", replyMarkup: null).ConfigureAwait(false);
         }
 
         //ToDo: add back to main menu button
