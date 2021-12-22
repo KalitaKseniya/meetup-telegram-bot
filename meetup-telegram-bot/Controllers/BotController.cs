@@ -1,9 +1,7 @@
 ﻿using meetup_telegram_bot.Data;
 using meetup_telegram_bot.Data.DbEntities;
-using meetup_telegram_bot.Factories;
 using meetup_telegram_bot.Infrastructure.Interfaces;
 using meetup_telegram_bot.Services;
-using meetup_telegram_bot.SignalR.Models;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -19,7 +17,6 @@ namespace meetup_telegram_bot.Controllers
         private readonly TelegramBotClient client; 
         private readonly IFeedbackRepository _feedbackRepository;
         private readonly IQuestionRepository _questionRepository;
-        private readonly IPresentationRepository _presentationRepository;
         private readonly ClientStatesService _clientStatesService;
         private readonly INotificationService _notificationService;
 
@@ -35,7 +32,6 @@ namespace meetup_telegram_bot.Controllers
             IFeedbackRepository feedbackRepository, 
             ClientStatesService clientStates,
             IQuestionRepository questionRepository,
-            IPresentationRepository presentationRepository,
             INotificationService notificationService)
         {
             var token = configuration.GetSection("environmentVariables").GetValue<string>(TelegramBotToken);
@@ -61,7 +57,6 @@ namespace meetup_telegram_bot.Controllers
             _questionRepository = questionRepository;
             _clientStatesService = clientStates;
             _notificationService = notificationService;
-            _presentationRepository = presentationRepository;
         }
 
         #region endpoints
@@ -83,47 +78,6 @@ namespace meetup_telegram_bot.Controllers
                 return;
             }
             await ProcessUpdateAsync(update).ConfigureAwait(false);
-        }
-        
-        /// <summary>
-        /// Endpoint to get questions for a speceific presentations (by presentation id) or to get questions out of presentation (by default word)
-        /// </summary>
-        /// <param name="presentationId">Id of presentation (Guid) or "default" for questions out of presentation</param>
-        /// <returns></returns>
-        [HttpGet("presentations/{presentationId}/questions")]
-        public async Task<List<QuestionModel>> GetQuestionsByPresentationId(string presentationId)
-        {
-            Guid presentationIdFromRoute;
-            const string outOfPresentation = "default";
-            var questionsForPresentation = Guid.TryParse(presentationId, out presentationIdFromRoute);
-
-            var questionsFromDb = presentationId == outOfPresentation ? await _questionRepository.GetOutOfPresentationAsync().ConfigureAwait(false) :
-                                                        (questionsForPresentation ? await _questionRepository.GetByPresentationIdAsync(presentationIdFromRoute).ConfigureAwait(false) :
-                                                        new List<QuestionDbEntity>());
-                                                     
-
-            return questionsFromDb.ToModel();
-        }
-        
-        [HttpGet("questions")]
-        public async Task<List<QuestionModel>> GetQuestions()
-        {
-            var questionsFromDb = await _questionRepository.GetAllAsync().ConfigureAwait(false);
-            return questionsFromDb.ToModel();
-        }
-        
-        [HttpGet("feedbacks")]
-        public async Task<List<FeedbackModel>> GetFeedbacks()
-        {
-            var feedbacksFromDb = await _feedbackRepository.GetAllAsync().ConfigureAwait(false);
-            return feedbacksFromDb.ToModel();
-        } 
-        
-        [HttpGet("presentations")]
-        public async Task<List<PresentationModel>> GetPresentations()
-        {
-            var presentationsFromDb = await _presentationRepository.GetAllAsync().ConfigureAwait(false);
-            return presentationsFromDb.ToModel();
         }
 
         #endregion
@@ -232,7 +186,7 @@ namespace meetup_telegram_bot.Controllers
                 await _notificationService.SendQuestionAsync(question).ConfigureAwait(false);
                 await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш вопрос {question.Text} и никнейм {question.AuthorName} были сохранены", replyMarkup: GetButtons()).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await client.SendTextMessageAsync(message.Chat.Id, $"Попробуйте еще раз", replyMarkup: GetButtons()).ConfigureAwait(false);
             }

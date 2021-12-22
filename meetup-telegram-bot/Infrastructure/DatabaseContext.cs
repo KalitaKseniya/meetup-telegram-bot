@@ -1,5 +1,4 @@
 ﻿using meetup_telegram_bot.Data.DbEntities;
-using meetup_telegram_bot.Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace meetup_telegram_bot.Infrastructure

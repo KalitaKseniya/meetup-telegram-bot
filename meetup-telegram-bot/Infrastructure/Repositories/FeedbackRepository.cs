@@ -1,5 +1,6 @@
 ﻿using meetup_telegram_bot.Data.DbEntities;
 using meetup_telegram_bot.Infrastructure.Interfaces;
+using meetup_telegram_bot.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace meetup_telegram_bot.Infrastructure.Repositories
@@ -15,6 +16,7 @@ namespace meetup_telegram_bot.Infrastructure.Repositories
 
         public async Task CreateAsync(FeedbackDbEntity dbEntity)
         {
+            dbEntity.AuthorName = AuthorNameGenerator.Generate();
             await _databaseContext.Feedbacks.AddAsync(dbEntity)
                 .ConfigureAwait(false);
             await _databaseContext.SaveChangesAsync()

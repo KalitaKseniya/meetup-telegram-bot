@@ -2,21 +2,21 @@
 {
     public static class AuthorNameGenerator
     {
-        private static List<string> nouns = new List<string>() 
+        private static readonly List<string> nouns = new() 
         {
-            "Джун",
-            "Сеньор",
-            "Стажер",
-            "Баг",
-            "Новичок",
-            "Архитектор",
-            "Девопс",
-            "Энтузиаст",
-            "Тестировщик",
-            "Жавист",
-            "Сын маминой подруги"
+            "джун",
+            "сеньор",
+            "стажер",
+            "баг",
+            "новичок",
+            "архитектор",
+            "девопс",
+            "энтузиаст",
+            "тестировщик",
+            "жавист",
+            "сын маминой подруги"
         };
-        private static List<string> adjectives = new List<string>() 
+        private static readonly List<string> adjectives = new() 
         { 
             "Прекрасный",
             "Изнемогающий",
@@ -30,12 +30,12 @@
             "Взволнованный",
             "Мстительный",
         };
+
         public static string Generate()
         {
-            Random rnd = new Random();
-            //var  = rnd.Next();
-            return "s";
+            Random random = new();
 
+            return $"{adjectives[random.Next(adjectives.Count)]} {nouns[random.Next(nouns.Count)]}";
         }
     }
 }

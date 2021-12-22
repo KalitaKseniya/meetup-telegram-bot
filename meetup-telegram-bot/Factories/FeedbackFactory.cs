@@ -9,6 +9,7 @@ namespace meetup_telegram_bot.Factories
         {
             return dbEntity == null ? new FeedbackModel() : new FeedbackModel
             {
+                AuthorName = dbEntity.AuthorName,
                 FutureProposal = dbEntity.FutureProposal,
                 Message = dbEntity.GeneralFeedback,
                 Sent = dbEntity.Date.Add(dbEntity.Time)
