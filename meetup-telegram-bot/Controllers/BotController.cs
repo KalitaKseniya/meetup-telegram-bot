@@ -72,11 +72,7 @@ namespace meetup_telegram_bot.Controllers
             {
                 return;
             }
-            if (message.Chat.Id != adminChatId)
-            {
-                await client.SendTextMessageAsync(message.Chat.Id, $"Бот ушел в отпуск, подождите, не спамьте)").ConfigureAwait(false);
-                return;
-            }
+            
             await ProcessUpdateAsync(update).ConfigureAwait(false);
         }
 
@@ -111,7 +107,7 @@ namespace meetup_telegram_bot.Controllers
                                 break;
                             default:
                                 //ToDo: implement 
-                                await client.SendTextMessageAsync(message.Chat.Id, $"Пожалуйста, попробуйте еще раз.").ConfigureAwait(false);
+                                await client.SendTextMessageAsync(message.Chat.Id, $"Пожалуйста, попробуйте еще раз", replyMarkup: GetButtons()).ConfigureAwait(false);
                                 break;
                         }
                     }
@@ -135,7 +131,8 @@ namespace meetup_telegram_bot.Controllers
                 Date = DateTime.Now.Date,
                 FutureProposal = message.Text,
                 GeneralFeedback = _clientStatesService.ClientStates[message.Chat.Id].FeedbackGeneralFeedback,
-                Time = DateTime.Now.TimeOfDay
+                Time = DateTime.Now.TimeOfDay,
+                AuthorName = AuthorNameGenerator.Generate()
             };
             try
             {
@@ -161,7 +158,7 @@ namespace meetup_telegram_bot.Controllers
         {
             _clientStatesService.SetPresentationQuestion(message.Chat.Id, message.Text);
             var clientService = _clientStatesService.ClientStates[message.Chat.Id];
-            Guid? presentationId = null;
+            Guid presentationId;
             try
             {
                 presentationId = clientService.UserState switch
@@ -169,7 +166,7 @@ namespace meetup_telegram_bot.Controllers
                     UserState.FirstPresentationQuestion => new Guid("f7cd069c-b314-45e3-9589-7796e45e5e01"),
                     UserState.SecondPresentationQuestion => new Guid("dacb7cdf-ad5a-4cd1-83d4-a02678fd1313"),
                     UserState.ThirdPresentationQuestion => new Guid("3a8bc096-dff2-4e31-b45a-010a47322836"),
-                    UserState.OutOfPresentationQuestion => null,
+                    UserState.OutOfPresentationQuestion => new Guid("958AE825-56F4-4390-90E3-4AA9741673A3"),
                     UserState.LeaveFeedback => throw new Exception($"Invalid user state = {clientService.UserState}"),
                     _ => throw new Exception($"Invalid user state = {clientService.UserState}")
                 };
@@ -178,13 +175,13 @@ namespace meetup_telegram_bot.Controllers
                     Id = Guid.NewGuid(),
                     Date = DateTime.Now.Date,
                     Text = clientService.QuestionText,
-                    AuthorName = "There will be funny name",
+                    AuthorName = AuthorNameGenerator.Generate(),
                     PresentationId = presentationId,
                     Time = DateTime.Now.TimeOfDay
                 };
                 await _questionRepository.CreateAsync(question).ConfigureAwait(false);
                 await _notificationService.SendQuestionAsync(question).ConfigureAwait(false);
-                await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш вопрос {question.Text} и никнейм {question.AuthorName} были сохранены", replyMarkup: GetButtons()).ConfigureAwait(false);
+                await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш вопрос '{question.Text}' и никнейм '{question.AuthorName}' были сохранены", replyMarkup: GetButtons()).ConfigureAwait(false);
             }
             catch (Exception)
             {

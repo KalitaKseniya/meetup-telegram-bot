@@ -7,11 +7,11 @@ namespace meetup_telegram_bot.Controllers
 {
     [ApiController]
     [Route("api/feedbacks")]
-    public class FeerbacksController
+    public class FeedbacksController
     {
         private readonly IFeedbackRepository _feedbackRepository;
 
-        public FeerbacksController(IFeedbackRepository feedbackRepository)
+        public FeedbacksController(IFeedbackRepository feedbackRepository)
         {
             _feedbackRepository=feedbackRepository;
         }

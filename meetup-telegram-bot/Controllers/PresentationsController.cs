@@ -8,12 +8,12 @@ namespace meetup_telegram_bot.Controllers
 {
     [ApiController]
     [Route("api/presentations")]
-    public class PresentationsConverter : ControllerBase
+    public class PresentationsController : ControllerBase
     {
         private readonly IQuestionRepository _questionRepository;
         private readonly IPresentationRepository _presentationRepository;
 
-        public PresentationsConverter(IQuestionRepository questionRepository, IPresentationRepository presentationRepository)
+        public PresentationsController(IQuestionRepository questionRepository, IPresentationRepository presentationRepository)
         {
             _questionRepository=questionRepository;
             _presentationRepository=presentationRepository;
@@ -28,12 +28,10 @@ namespace meetup_telegram_bot.Controllers
         public async Task<List<QuestionModel>> GetQuestionsByPresentationId(string presentationId)
         {
             Guid presentationIdFromRoute;
-            const string outOfPresentation = "default";
             var questionsForPresentation = Guid.TryParse(presentationId, out presentationIdFromRoute);
 
-            var questionsFromDb = presentationId == outOfPresentation ? await _questionRepository.GetOutOfPresentationAsync().ConfigureAwait(false) :
-                                                        (questionsForPresentation ? await _questionRepository.GetByPresentationIdAsync(presentationIdFromRoute).ConfigureAwait(false) :
-                                                        new List<QuestionDbEntity>());
+            var questionsFromDb = questionsForPresentation? await _questionRepository.GetByPresentationIdAsync(presentationIdFromRoute).ConfigureAwait(false) :
+                                                        new List<QuestionDbEntity>();
 
 
             return questionsFromDb.ToModel();

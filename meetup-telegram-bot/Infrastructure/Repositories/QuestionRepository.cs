@@ -1,6 +1,5 @@
 ﻿using meetup_telegram_bot.Data.DbEntities;
 using meetup_telegram_bot.Infrastructure.Interfaces;
-using meetup_telegram_bot.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace meetup_telegram_bot.Infrastructure.Repositories
@@ -13,11 +12,9 @@ namespace meetup_telegram_bot.Infrastructure.Repositories
         {
             _databaseContext = databaseContext;
         }
-        
+
         public async Task CreateAsync(QuestionDbEntity dbEntity)
         {
-            dbEntity.AuthorName = AuthorNameGenerator.Generate();
-
             await _databaseContext.Questions.AddAsync(dbEntity);
             await _databaseContext.SaveChangesAsync();
         }
@@ -30,19 +27,10 @@ namespace meetup_telegram_bot.Infrastructure.Repositories
                 .ToListAsync()
                 .ConfigureAwait(false);
         }
-        
+
         public async Task<List<QuestionDbEntity>> GetByPresentationIdAsync(Guid? presentationId)
         {
             return await _databaseContext.Questions.Where(q => q.PresentationId == presentationId)
-                .OrderByDescending(q => q.Date)
-                .ThenByDescending(q => q.Time)
-                .ToListAsync()
-                .ConfigureAwait(false);
-        }
-        
-        public async Task<List<QuestionDbEntity>> GetOutOfPresentationAsync()
-        {
-            return await _databaseContext.Questions.Where(q => q.PresentationId == null)
                 .OrderByDescending(q => q.Date)
                 .ThenByDescending(q => q.Time)
                 .ToListAsync()

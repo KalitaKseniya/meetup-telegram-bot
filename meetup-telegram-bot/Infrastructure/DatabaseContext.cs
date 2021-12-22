@@ -31,7 +31,8 @@ namespace meetup_telegram_bot.Infrastructure
 
             builder.Entity<QuestionDbEntity>(b => {
                 b.HasKey(c => c.Id);
-                b.Property(c => c.PresentationId);
+                b.Property(c => c.PresentationId)
+                .IsRequired();
 
                 b.HasOne<PresentationDbEntity>()
                     .WithMany()

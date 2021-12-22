@@ -7,6 +7,5 @@ namespace meetup_telegram_bot.Infrastructure.Interfaces
         Task CreateAsync(QuestionDbEntity dbEntity);
         Task<List<QuestionDbEntity>> GetAllAsync();
         Task<List<QuestionDbEntity>> GetByPresentationIdAsync(Guid? presentationId);
-        Task<List<QuestionDbEntity>> GetOutOfPresentationAsync();
     }
 }

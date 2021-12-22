@@ -9,6 +9,7 @@ namespace meetup_telegram_bot.Factories
         {
             return dbEntity == null? new PresentationModel() : new PresentationModel
             {
+                Id = dbEntity.Id,
                 Description = dbEntity.Description,
                 SpeackerName = dbEntity.SpeackerName,
                 Title = dbEntity.Title
