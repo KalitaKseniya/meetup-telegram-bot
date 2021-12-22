@@ -19,6 +19,7 @@ builder.Services.AddDbContext<DatabaseContext>(opt =>
 
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+builder.Services.AddScoped<IPresentationRepository, PresentationRepository>();
 builder.Services.AddSingleton<INotificationService, NotificationService>();
 builder.Services.AddSingleton<ClientStatesService>();
 

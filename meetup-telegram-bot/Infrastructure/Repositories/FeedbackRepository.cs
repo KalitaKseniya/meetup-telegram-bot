@@ -15,8 +15,10 @@ namespace meetup_telegram_bot.Infrastructure.Repositories
 
         public async Task CreateAsync(FeedbackDbEntity dbEntity)
         {
-            await _databaseContext.Feedbacks.AddAsync(dbEntity);
-            await _databaseContext.SaveChangesAsync();
+            await _databaseContext.Feedbacks.AddAsync(dbEntity)
+                .ConfigureAwait(false);
+            await _databaseContext.SaveChangesAsync()
+                .ConfigureAwait(false);
         }
 
         public async Task<List<FeedbackDbEntity>> GetAllAsync()
@@ -24,12 +26,13 @@ namespace meetup_telegram_bot.Infrastructure.Repositories
             return await _databaseContext.Feedbacks
                 .OrderByDescending(q => q.Date)
                 .ThenByDescending(q => q.Time)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
         }
 
         public async Task<FeedbackDbEntity> GetByIdAsync(Guid id)
         {
-            return await _databaseContext.Feedbacks.FirstOrDefaultAsync(f => f.Id == id);
+            return await _databaseContext.Feedbacks.FirstOrDefaultAsync(f => f.Id == id).ConfigureAwait(false);
         }
     }
 }

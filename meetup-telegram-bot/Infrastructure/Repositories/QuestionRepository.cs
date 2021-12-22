@@ -24,7 +24,8 @@ namespace meetup_telegram_bot.Infrastructure.Repositories
             return await _databaseContext.Questions
                 .OrderByDescending(q => q.Date)
                 .ThenByDescending(q => q.Time)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
         }
         
         public async Task<List<QuestionDbEntity>> GetByPresentationIdAsync(Guid? presentationId)
@@ -32,7 +33,8 @@ namespace meetup_telegram_bot.Infrastructure.Repositories
             return await _databaseContext.Questions.Where(q => q.PresentationId == presentationId)
                 .OrderByDescending(q => q.Date)
                 .ThenByDescending(q => q.Time)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
         }
         
         public async Task<List<QuestionDbEntity>> GetOutOfPresentationAsync()
@@ -40,7 +42,8 @@ namespace meetup_telegram_bot.Infrastructure.Repositories
             return await _databaseContext.Questions.Where(q => q.PresentationId == null)
                 .OrderByDescending(q => q.Date)
                 .ThenByDescending(q => q.Time)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
         }
     }
 }

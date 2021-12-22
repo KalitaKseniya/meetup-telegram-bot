@@ -1,7 +1,9 @@
 ﻿using meetup_telegram_bot.Data;
 using meetup_telegram_bot.Data.DbEntities;
+using meetup_telegram_bot.Factories;
 using meetup_telegram_bot.Infrastructure.Interfaces;
 using meetup_telegram_bot.Services;
+using meetup_telegram_bot.SignalR.Models;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -17,6 +19,7 @@ namespace meetup_telegram_bot.Controllers
         private readonly TelegramBotClient client; 
         private readonly IFeedbackRepository _feedbackRepository;
         private readonly IQuestionRepository _questionRepository;
+        private readonly IPresentationRepository _presentationRepository;
         private readonly ClientStatesService _clientStatesService;
         private readonly INotificationService _notificationService;
 
@@ -32,6 +35,7 @@ namespace meetup_telegram_bot.Controllers
             IFeedbackRepository feedbackRepository, 
             ClientStatesService clientStates,
             IQuestionRepository questionRepository,
+            IPresentationRepository presentationRepository,
             INotificationService notificationService)
         {
             var token = configuration.GetSection("environmentVariables").GetValue<string>(TelegramBotToken);
@@ -57,6 +61,7 @@ namespace meetup_telegram_bot.Controllers
             _questionRepository = questionRepository;
             _clientStatesService = clientStates;
             _notificationService = notificationService;
+            _presentationRepository = presentationRepository;
         }
 
         #region endpoints
@@ -118,6 +123,13 @@ namespace meetup_telegram_bot.Controllers
             }
 
             return feedbacks;
+        } 
+        
+        [HttpGet("presentations")]
+        public async Task<List<PresentationModel>> GetPresentations()
+        {
+            var presentationsFromDbEntity = await _presentationRepository.GetAllAsync().ConfigureAwait(false);
+            return presentationsFromDbEntity.ToModel();
         }
 
         #endregion
