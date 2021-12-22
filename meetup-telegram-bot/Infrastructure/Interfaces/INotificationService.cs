@@ -6,7 +6,5 @@ namespace meetup_telegram_bot.Infrastructure.Interfaces
     {
         public Task SendFeedbackAsync(FeedbackDbEntity feedback);
         public Task SendQuestionAsync(QuestionDbEntity question);
-        public Task SendQuestionsAsync(List<QuestionDbEntity> questions);
-        public Task SendFeedbacksAsync(List<FeedbackDbEntity> feedbacks);
     }
 }

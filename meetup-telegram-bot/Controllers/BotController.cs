@@ -82,54 +82,39 @@ namespace meetup_telegram_bot.Controllers
         /// <param name="presentationId">Id of presentation (Guid) or "default" for questions out of presentation</param>
         /// <returns></returns>
         [HttpGet("presentations/{presentationId}/questions")]
-        public async Task<List<QuestionDbEntity>> GetQuestionsByPresentationId(string presentationId)
+        public async Task<List<QuestionModel>> GetQuestionsByPresentationId(string presentationId)
         {
             Guid presentationIdFromRoute;
             const string outOfPresentation = "default";
             var questionsForPresentation = Guid.TryParse(presentationId, out presentationIdFromRoute);
 
-            var questions = presentationId == outOfPresentation ? await _questionRepository.GetOutOfPresentationAsync().ConfigureAwait(false) :
+            var questionsFromDb = presentationId == outOfPresentation ? await _questionRepository.GetOutOfPresentationAsync().ConfigureAwait(false) :
                                                         (questionsForPresentation ? await _questionRepository.GetByPresentationIdAsync(presentationIdFromRoute).ConfigureAwait(false) :
                                                         new List<QuestionDbEntity>());
                                                      
-            // ToDo: think of null
-            if (questions != null)
-            {
-                await _notificationService.SendQuestionsAsync(questions).ConfigureAwait(false);
-            }
 
-            return questions;
+            return questionsFromDb.ToModel();
         }
         
         [HttpGet("questions")]
-        public async Task<List<QuestionDbEntity>> GetQuestions()
+        public async Task<List<QuestionModel>> GetQuestions()
         {
-            var questions = await _questionRepository.GetAllAsync().ConfigureAwait(false);
-            if (questions != null)
-            {
-                await _notificationService.SendQuestionsAsync(questions).ConfigureAwait(false);
-            }
-
-            return questions;
+            var questionsFromDb = await _questionRepository.GetAllAsync().ConfigureAwait(false);
+            return questionsFromDb.ToModel();
         }
         
         [HttpGet("feedbacks")]
-        public async Task<List<FeedbackDbEntity>> GetFeedbacks()
+        public async Task<List<FeedbackModel>> GetFeedbacks()
         {
-            var feedbacks = await _feedbackRepository.GetAllAsync().ConfigureAwait(false);
-            if (feedbacks != null)
-            {
-                await _notificationService.SendFeedbacksAsync(feedbacks).ConfigureAwait(false);
-            }
-
-            return feedbacks;
+            var feedbacksFromDb = await _feedbackRepository.GetAllAsync().ConfigureAwait(false);
+            return feedbacksFromDb.ToModel();
         } 
         
         [HttpGet("presentations")]
         public async Task<List<PresentationModel>> GetPresentations()
         {
-            var presentationsFromDbEntity = await _presentationRepository.GetAllAsync().ConfigureAwait(false);
-            return presentationsFromDbEntity.ToModel();
+            var presentationsFromDb = await _presentationRepository.GetAllAsync().ConfigureAwait(false);
+            return presentationsFromDb.ToModel();
         }
 
         #endregion

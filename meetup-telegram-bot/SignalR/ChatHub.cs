@@ -14,15 +14,5 @@ namespace meetup_telegram_bot.SignalR
         {
             await Clients.All.SendQuestion(question).ConfigureAwait(false);
         }
-        
-        public async Task SendQuestions(List<QuestionModel> questions)
-        {
-            await Clients.All.SendQuestions(questions).ConfigureAwait(false);
-        }
-        
-        public async Task SendFeedbacks(List<FeedbackModel> feedbacks)
-        {
-            await Clients.All.SendFeedbacks(feedbacks).ConfigureAwait(false);
-        }
     }
 }
