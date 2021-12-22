@@ -7,5 +7,7 @@ namespace meetup_telegram_bot.SignalR.Interfaces
         Task SendFeedback(FeedbackModel feedback);
 
         Task SendQuestion(QuestionModel question);
+        Task SendQuestions(List<QuestionModel> questions);
+        Task SendFeedbacks(List<FeedbackModel> feedbacks);
     }
 }

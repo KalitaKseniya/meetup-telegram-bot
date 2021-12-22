@@ -58,7 +58,8 @@ namespace meetup_telegram_bot.Controllers
             _clientStatesService = clientStates;
             _notificationService = notificationService;
         }
-        
+
+        #region endpoints
         [HttpPost]
         public async Task Post([FromBody] Update update)
         {
@@ -66,35 +67,63 @@ namespace meetup_telegram_bot.Controllers
             {
                 throw new ArgumentNullException(nameof(update));
             }
-            
-            await ProcessUpdate(update);
+           
+            await ProcessUpdateAsync(update).ConfigureAwait(false);
         }
         
-        [HttpGet]
-        public async Task<QuestionDbEntity> Get(string message)
+        /// <summary>
+        /// Endpoint to get questions for a speceific presentations (by presentation id) or to get questions out of presentation (by default word)
+        /// </summary>
+        /// <param name="presentationId">Id of presentation (Guid) or "default" for questions out of presentation</param>
+        /// <returns></returns>
+        [HttpGet("presentations/{presentationId}/questions")]
+        public async Task<List<QuestionDbEntity>> GetQuestionsByPresentationId(string presentationId)
         {
-            var fakeFeedback = new FeedbackDbEntity
+            Guid presentationIdFromRoute;
+            const string outOfPresentation = "default";
+            var questionsForPresentation = Guid.TryParse(presentationId, out presentationIdFromRoute);
+
+            var questions = presentationId == outOfPresentation ? await _questionRepository.GetOutOfPresentationAsync().ConfigureAwait(false) :
+                                                        (questionsForPresentation ? await _questionRepository.GetByPresentationIdAsync(presentationIdFromRoute).ConfigureAwait(false) :
+                                                        new List<QuestionDbEntity>());
+                                                     
+            // ToDo: think of null
+            if (questions != null)
             {
-                GeneralFeedback = message,
-                FutureProposal = "TEST PROPOSAL",
-                Date = DateTime.Now
-            };
+                await _notificationService.SendQuestionsAsync(questions).ConfigureAwait(false);
+            }
 
-            var fakeQuestion = new QuestionDbEntity
+            return questions;
+        }
+        
+        [HttpGet("questions")]
+        public async Task<List<QuestionDbEntity>> GetQuestions()
+        {
+            var questions = await _questionRepository.GetAllAsync().ConfigureAwait(false);
+            if (questions != null)
             {
-                Text = "Do you love it?",
-                Date = DateTime.Now,
-                AuthorName = "Hanna",
-                PresentationId = new Guid("dacb7cdf-ad5a-4cd1-83d4-a02678fd1313")
-            };
+                await _notificationService.SendQuestionsAsync(questions).ConfigureAwait(false);
+            }
 
-            await _notificationService.SendFeedbackAsync(fakeFeedback).ConfigureAwait(false);
-            await _notificationService.SendQuestionAsync(fakeQuestion).ConfigureAwait(false);
+            return questions;
+        }
+        
+        [HttpGet("feedbacks")]
+        public async Task<List<FeedbackDbEntity>> GetFeedbacks()
+        {
+            var feedbacks = await _feedbackRepository.GetAllAsync().ConfigureAwait(false);
+            if (feedbacks != null)
+            {
+                await _notificationService.SendFeedbacksAsync(feedbacks).ConfigureAwait(false);
+            }
 
-            return fakeQuestion;
+            return feedbacks;
         }
 
-        private async Task ProcessUpdate(Update update)
+        #endregion
+
+        #region private methods
+        private async Task ProcessUpdateAsync(Update update)
         {
             switch (update.Type)
             {
@@ -129,7 +158,7 @@ namespace meetup_telegram_bot.Controllers
                                 break;
                             default:
                                 //ToDo: implement 
-                                await client.SendTextMessageAsync(message.Chat.Id, $"Sorry a haven't been implemented yet.").ConfigureAwait(false);
+                                await client.SendTextMessageAsync(message.Chat.Id, $"Пожалуйста, попробуйте еще раз.").ConfigureAwait(false);
                                 break;
                         }
                     }
@@ -140,7 +169,8 @@ namespace meetup_telegram_bot.Controllers
                     
                     break;
                 default:
-                    throw new NotImplementedException();
+                    //todo: think of this;
+                    return;
             }
         }
         
@@ -170,16 +200,24 @@ namespace meetup_telegram_bot.Controllers
         private async Task ProcessPresentationAuthorName(Message message)
         {
             var clientService = _clientStatesService.ClientStates[message.Chat.Id];
-            Guid? presentationId = clientService.UserState switch
+            Guid? presentationId = null;
+            try
             {
-                UserState.FirstPresentationQuestion => new Guid("f7cd069c-b314-45e3-9589-7796e45e5e01"),
-                UserState.SecondPresentationQuestion => new Guid("dacb7cdf-ad5a-4cd1-83d4-a02678fd1313"),
-                UserState.ThirdPresentationQuestion => new Guid("3a8bc096-dff2-4e31-b45a-010a47322836"),
-                UserState.OutOfPresentationQuestion => null,
-                UserState.LeaveFeedback => throw new NotImplementedException(),
-                _ => throw new Exception("Invalid user state")
-            };
-            
+                presentationId = clientService.UserState switch
+                {
+                    UserState.FirstPresentationQuestion => new Guid("f7cd069c-b314-45e3-9589-7796e45e5e01"),
+                    UserState.SecondPresentationQuestion => new Guid("dacb7cdf-ad5a-4cd1-83d4-a02678fd1313"),
+                    UserState.ThirdPresentationQuestion => new Guid("3a8bc096-dff2-4e31-b45a-010a47322836"),
+                    UserState.OutOfPresentationQuestion => null,
+                    UserState.LeaveFeedback => throw new Exception($"Invalid user state = {clientService.UserState}"),
+                    _ =>  throw new Exception($"Invalid user state = {clientService.UserState}")
+                };
+            }
+            catch(Exception ex)
+            {
+                await client.SendTextMessageAsync(message.Chat.Id, $"Попробуйте еще раз", replyMarkup: GetButtons()).ConfigureAwait(false);
+            }
+
             var question = new QuestionDbEntity
             {
                 Id = Guid.NewGuid(),
@@ -271,5 +309,6 @@ namespace meetup_telegram_bot.Controllers
                 }
              );
         }
+        #endregion
     }
 }
