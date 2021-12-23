@@ -67,59 +67,47 @@ namespace meetup_telegram_bot.Controllers
             {
                 throw new ArgumentNullException(nameof(update));
             }
-            var message = update.Message;
             if (update.Type != UpdateType.Message)
             {
                 return;
             }
             
-            await ProcessUpdateAsync(update).ConfigureAwait(false);
+            await ProcessUpdateMessageAsync(update.Message).ConfigureAwait(false);
         }
 
         #endregion
 
         #region private methods
-        private async Task ProcessUpdateAsync(Update update)
+        private async Task ProcessUpdateMessageAsync(Message message)
         {
-            switch (update.Type)
+            if (_clientStatesService.ClientStates.ContainsKey(message.Chat.Id))
             {
-                case UpdateType.Message:
-                    var message = update.Message;
-                    if (_clientStatesService.ClientStates.ContainsKey(message.Chat.Id))
-                    {
-                        switch (_clientStatesService.ClientStates[message.Chat.Id].UserState)
+                switch (_clientStatesService.ClientStates[message.Chat.Id].UserState)
+                {
+                    case UserState.LeaveFeedback:
+                        if (_clientStatesService.ClientStates[message.Chat.Id].FeedbackGeneralFeedback == null)
                         {
-                            case UserState.LeaveFeedback:
-                                if (_clientStatesService.ClientStates[message.Chat.Id].FeedbackGeneralFeedback == null)
-                                {
-                                    await ProcessLeavingFeedback(message).ConfigureAwait(false);
-                                }
-                                else
-                                {
-                                    await ProcessLeavingFeedbackFutureProposal(message).ConfigureAwait(false);
-                                }
-                                break;
-                            case UserState.FirstPresentationQuestion:
-                            case UserState.SecondPresentationQuestion:
-                            case UserState.ThirdPresentationQuestion:
-                            case UserState.OutOfPresentationQuestion:
-                                await ProcessPresentationQuestion(message).ConfigureAwait(false);
-                                break;
-                            default:
-                                //ToDo: implement 
-                                await client.SendTextMessageAsync(message.Chat.Id, $"Пожалуйста, попробуйте еще раз", replyMarkup: GetButtons()).ConfigureAwait(false);
-                                break;
+                            await ProcessLeavingFeedback(message).ConfigureAwait(false);
                         }
-                    }
-                    else 
-                    {
-                        await ProcessMainKeyboard(message).ConfigureAwait(false);
-                    }
-                    
-                    break;
-                default:
-                    //todo: think of this;
-                    return;
+                        else
+                        {
+                            await ProcessLeavingFeedbackFutureProposal(message).ConfigureAwait(false);
+                        }
+                        break;
+                    case UserState.FirstPresentationQuestion:
+                    case UserState.SecondPresentationQuestion:
+                    case UserState.ThirdPresentationQuestion:
+                    case UserState.OutOfPresentationQuestion:
+                        await ProcessPresentationQuestionAsync(message).ConfigureAwait(false);
+                        break;
+                    default:
+                        await client.SendTextMessageAsync(message.Chat.Id, $"Пожалуйста, попробуйте еще раз", replyMarkup: GetButtons()).ConfigureAwait(false);
+                        break;
+                }
+            }
+            else 
+            {
+                await ProcessMainKeyboardAsync(message).ConfigureAwait(false);
             }
         }
         
@@ -138,7 +126,7 @@ namespace meetup_telegram_bot.Controllers
             {
                 await _feedbackRepository.CreateAsync(feedback).ConfigureAwait(false);
                 await _notificationService.SendFeedbackAsync(feedback).ConfigureAwait(false);
-                await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш фидбэк {feedback.GeneralFeedback} и предложения {feedback.FutureProposal} были сохранены", replyMarkup: GetButtons()).ConfigureAwait(false);
+                await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш фидбэк '{feedback.GeneralFeedback}' и предложения '{feedback.FutureProposal}' были сохранены под ником '{feedback.AuthorName}'", replyMarkup: GetButtons()).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -150,17 +138,20 @@ namespace meetup_telegram_bot.Controllers
         private async Task ProcessLeavingFeedback(Message message)
         {
             _clientStatesService.SetFeedback(message.Chat.Id, message.Text);
-            await client.SendTextMessageAsync(message.Chat.Id, "Напишите предложения для будущих митапов!", replyMarkup: null).ConfigureAwait(false);
+            await client.SendTextMessageAsync(message.Chat.Id, "Напишите предложения для будущих митапов", replyMarkup: null).ConfigureAwait(false);
         }
         
-        // Create question model, add it to database and send message on success to user
-        private async Task ProcessPresentationQuestion(Message message)
+        /// <summary>
+        /// Create question model, add it to database and send message on success to user
+        /// </summary>
+        private async Task ProcessPresentationQuestionAsync(Message message)
         {
             _clientStatesService.SetPresentationQuestion(message.Chat.Id, message.Text);
             var clientService = _clientStatesService.ClientStates[message.Chat.Id];
             Guid presentationId;
             try
             {
+                // ToDo: fetch in another method
                 presentationId = clientService.UserState switch
                 {
                     UserState.FirstPresentationQuestion => new Guid("f7cd069c-b314-45e3-9589-7796e45e5e01"),
@@ -191,32 +182,32 @@ namespace meetup_telegram_bot.Controllers
         }
 
         //ToDo: add back to main menu button
-        private async Task ProcessMainKeyboard(Message message)
+        private async Task ProcessMainKeyboardAsync(Message message)
         {
-            const string text1 = "Пожалуйста, введите свой вопрос";
-            const string text2 = "Оставьте свой фидбэк";
+            const string questionText = "Пожалуйста, введите свой вопрос";
+            const string feedbackText = "Оставьте свой фидбэк";
 
             switch (message.Text)
             {
                 case MainKeyboard.FirstPresentationQuestion:
                     _clientStatesService.SetUserState(message.Chat.Id, UserState.FirstPresentationQuestion);
-                    await client.SendTextMessageAsync(message.Chat.Id, text1, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
+                    await client.SendTextMessageAsync(message.Chat.Id, questionText, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
                     break;
                 case MainKeyboard.SecondPresentationQuestion:
                     _clientStatesService.SetUserState(message.Chat.Id, UserState.SecondPresentationQuestion);
-                    await client.SendTextMessageAsync(message.Chat.Id, text1, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
+                    await client.SendTextMessageAsync(message.Chat.Id, questionText, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
                     break;
                 case MainKeyboard.ThirdPresentationQuestion:
                     _clientStatesService.SetUserState(message.Chat.Id, UserState.ThirdPresentationQuestion);
-                    await client.SendTextMessageAsync(message.Chat.Id, text1, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
+                    await client.SendTextMessageAsync(message.Chat.Id, questionText, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
                     break;
                 case MainKeyboard.OutOfPresentationQuestion:
                     _clientStatesService.SetUserState(message.Chat.Id, UserState.OutOfPresentationQuestion);
-                    await client.SendTextMessageAsync(message.Chat.Id, text1, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
+                    await client.SendTextMessageAsync(message.Chat.Id, questionText, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
                     break;
                 case MainKeyboard.LeaveFeedback:
                     _clientStatesService.SetUserState(message.Chat.Id, UserState.LeaveFeedback);
-                    await client.SendTextMessageAsync(message.Chat.Id, text2, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
+                    await client.SendTextMessageAsync(message.Chat.Id, feedbackText, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
                     break;
                 default:
                     await client.SendTextMessageAsync(message.Chat.Id, "Пожалуйста, выберите пункт главного меню", replyMarkup: GetButtons()).ConfigureAwait(false);

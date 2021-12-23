@@ -13,7 +13,7 @@ namespace meetup_telegram_bot.Controllers
 
         public QuestionsController(IQuestionRepository questionRepository)
         {
-            _questionRepository=questionRepository;
+            _questionRepository = questionRepository;
         }
 
         [HttpGet]
