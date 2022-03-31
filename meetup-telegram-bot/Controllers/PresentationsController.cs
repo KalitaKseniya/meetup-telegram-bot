@@ -38,10 +38,22 @@ namespace meetup_telegram_bot.Controllers
         }
 
         /// <summary>
+        /// Returns a list of all displayed presentations
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<List<PresentationModel>> GetDisplayedPresentations()
+        {
+            var presentationsFromDb = await _presentationRepository.GetDisplayedAsync().ConfigureAwait(false);
+            return presentationsFromDb.ToModel();
+        }
+        
+        /// <summary>
         /// Returns a list of all presentations
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [Route("all")]
         public async Task<List<PresentationModel>> GetPresentations()
         {
             var presentationsFromDb = await _presentationRepository.GetAllAsync().ConfigureAwait(false);

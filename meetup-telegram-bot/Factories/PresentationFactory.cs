@@ -12,7 +12,8 @@ namespace meetup_telegram_bot.Factories
                 Id = dbEntity.Id,
                 Description = dbEntity.Description,
                 SpeackerName = dbEntity.SpeackerName,
-                Title = dbEntity.Title
+                Title = dbEntity.Title,
+                IsDisplayed = dbEntity.IsDisplayed
             };
         }
 

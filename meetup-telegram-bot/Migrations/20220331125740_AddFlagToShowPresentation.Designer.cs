@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using meetup_telegram_bot.Infrastructure;
 
@@ -11,9 +12,10 @@ using meetup_telegram_bot.Infrastructure;
 namespace meetup_telegram_bot.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20220331125740_AddFlagToShowPresentation")]
+    partial class AddFlagToShowPresentation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,7 +83,7 @@ namespace meetup_telegram_bot.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("ddddcfc4-9a9d-4277-9b34-23c195468113"),
+                            Id = new Guid("f3c868d7-3153-468f-be7c-11bff5ee6692"),
                             Description = "Описание",
                             IsDisplayed = false,
                             SpeackerName = "Hanna",
@@ -89,7 +91,7 @@ namespace meetup_telegram_bot.Migrations
                         },
                         new
                         {
-                            Id = new Guid("03f626a6-3d04-4ffd-8dbb-f0ba307830c5"),
+                            Id = new Guid("794db43d-d7a9-44bb-99aa-57e4de7ee59b"),
                             Description = "Описание",
                             IsDisplayed = false,
                             SpeackerName = "Kseniya",
@@ -97,7 +99,7 @@ namespace meetup_telegram_bot.Migrations
                         },
                         new
                         {
-                            Id = new Guid("46ff2291-6111-4dbf-a3e9-23d2c9e1ad7d"),
+                            Id = new Guid("8f4f245d-bbfc-4ace-bcf4-51d2cb70ed6d"),
                             Description = "Описание",
                             IsDisplayed = false,
                             SpeackerName = "Сюрприз",
@@ -126,14 +128,6 @@ namespace meetup_telegram_bot.Migrations
                             IsDisplayed = true,
                             SpeackerName = "Илья",
                             Title = "Реалии фуллстека"
-                        },
-                        new
-                        {
-                            Id = new Guid("958ae825-56f4-4390-90e3-4aa9741673a3"),
-                            Description = "Описание",
-                            IsDisplayed = true,
-                            SpeackerName = "",
-                            Title = "Вопрос не по темам"
                         });
                 });
 

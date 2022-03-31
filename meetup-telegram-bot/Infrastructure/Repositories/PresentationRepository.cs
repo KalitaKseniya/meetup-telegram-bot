@@ -24,5 +24,13 @@ namespace meetup_telegram_bot.Infrastructure.Repositories
                 .ToListAsync()
                 .ConfigureAwait(false);
         }
+        
+        public async Task<List<PresentationDbEntity>> GetDisplayedAsync()
+        {
+            return await _databaseContext.Presentations
+                .Where(x => x.IsDisplayed == true)
+                .ToListAsync()
+                .ConfigureAwait(false);
+        }
     }
 }

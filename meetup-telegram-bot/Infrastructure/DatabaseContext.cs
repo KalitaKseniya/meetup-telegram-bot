@@ -1,4 +1,5 @@
 ﻿using meetup_telegram_bot.Data.DbEntities;
+using meetup_telegram_bot.Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace meetup_telegram_bot.Infrastructure
@@ -15,9 +16,10 @@ namespace meetup_telegram_bot.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            //builder.ApplyConfiguration(new PresentationConfiguration());
+            builder.ApplyConfiguration(new PresentationConfiguration());
             builder.Entity<PresentationDbEntity>(b => {
                 b.HasKey(p => p.Id);
+                b.Property(p => p.IsDisplayed).HasDefaultValue(false);
                 b.ToTable("Presentations");
             });
 

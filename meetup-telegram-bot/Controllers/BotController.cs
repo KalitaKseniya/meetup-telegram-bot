@@ -71,7 +71,7 @@ namespace meetup_telegram_bot.Controllers
             {
                 return;
             }
-            
+
             await ProcessUpdateMessageAsync(update.Message).ConfigureAwait(false);
         }
 
@@ -154,9 +154,9 @@ namespace meetup_telegram_bot.Controllers
                 // ToDo: fetch in another method
                 presentationId = clientService.UserState switch
                 {
-                    UserState.FirstPresentationQuestion => new Guid("f7cd069c-b314-45e3-9589-7796e45e5e01"),
-                    UserState.SecondPresentationQuestion => new Guid("dacb7cdf-ad5a-4cd1-83d4-a02678fd1313"),
-                    UserState.ThirdPresentationQuestion => new Guid("3a8bc096-dff2-4e31-b45a-010a47322836"),
+                    UserState.FirstPresentationQuestion => new Guid("fadabc27-40e4-47f3-bc1b-f0916b4772cd"),
+                    UserState.SecondPresentationQuestion => new Guid("0c03ba0b-3b46-42ba-ba39-6b635c9a4bc0"),
+                    UserState.ThirdPresentationQuestion => new Guid("99d09f48-0fec-4ef4-8292-2bab81de8d37"),
                     UserState.OutOfPresentationQuestion => new Guid("958AE825-56F4-4390-90E3-4AA9741673A3"),
                     UserState.LeaveFeedback => throw new Exception($"Invalid user state = {clientService.UserState}"),
                     _ => throw new Exception($"Invalid user state = {clientService.UserState}")

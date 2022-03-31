@@ -2,9 +2,9 @@
 {
     public static class MainKeyboard
     {
-        public const string FirstPresentationQuestion = "Путь .NET-разработчика";
-        public const string SecondPresentationQuestion = "Работа с системой Git";
-        public const string ThirdPresentationQuestion = "In-live разработчика ASP.NET приложения";
+        public const string FirstPresentationQuestion = "Базы данных. То, что вы РЕАЛЬНО будете использовать на проекте";
+        public const string SecondPresentationQuestion = "REST-архитектура или как усидеть на 6 стулья";
+        public const string ThirdPresentationQuestion = "Реалии фуллстека";
         public const string OutOfPresentationQuestion = "Вопрос не по темам";
         public const string LeaveFeedback = "Оставить отзыв";
     }
