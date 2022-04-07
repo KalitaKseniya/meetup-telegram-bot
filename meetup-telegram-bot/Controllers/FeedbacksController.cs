@@ -1,6 +1,6 @@
-﻿using meetup_telegram_bot.Factories;
-using meetup_telegram_bot.Infrastructure.Interfaces;
-using meetup_telegram_bot.SignalR.Models;
+﻿using meetup_telegram_bot.SignalR.Models;
+using MeetupTelegramBot.BusinessLayer.Factories;
+using MeetupTelegramBot.BusinessLayer.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace meetup_telegram_bot.Controllers
@@ -9,17 +9,17 @@ namespace meetup_telegram_bot.Controllers
     [Route("api/feedbacks")]
     public class FeedbacksController
     {
-        private readonly IFeedbackRepository _feedbackRepository;
+        private readonly IFeedbackService _feedbackService;
 
-        public FeedbacksController(IFeedbackRepository feedbackRepository)
+        public FeedbacksController(IFeedbackService feedbackService)
         {
-            _feedbackRepository=feedbackRepository;
+            _feedbackService = feedbackService;
         }
 
         [HttpGet]
         public async Task<List<FeedbackModel>> GetFeedbacks()
         {
-            var feedbacksFromDb = await _feedbackRepository.GetAllAsync().ConfigureAwait(false);
+            var feedbacksFromDb = await _feedbackService.GetAllAsync().ConfigureAwait(false);
             return feedbacksFromDb.ToModel();
         }
     }

@@ -1,8 +1,10 @@
-using meetup_telegram_bot.Infrastructure;
-using meetup_telegram_bot.Infrastructure.Interfaces;
-using meetup_telegram_bot.Infrastructure.Repositories;
-using meetup_telegram_bot.Services;
-using meetup_telegram_bot.SignalR;
+using MeetupTelegramBot.BusinessLayer.Configuration;
+using MeetupTelegramBot.BusinessLayer.Interfaces;
+using MeetupTelegramBot.BusinessLayer.Services;
+using MeetupTelegramBot.BusinessLayer.SignalR;
+using MeetupTelegramBot.DataAccess.Contexts;
+using MeetupTelegramBot.DataAccess.Interfaces;
+using MeetupTelegramBot.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,8 +22,12 @@ builder.Services.AddDbContext<DatabaseContext>(opt =>
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IPresentationRepository, PresentationRepository>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<IPresentationService, PresentationService>();
 builder.Services.AddSingleton<INotificationService, NotificationService>();
 builder.Services.AddSingleton<ClientStatesService>();
+builder.Services.AddAutoMapper(typeof(MapperProfile));
 
 builder.Services.AddSignalR();
 builder.Services.AddCors();

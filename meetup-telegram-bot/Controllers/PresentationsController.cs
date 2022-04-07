@@ -1,7 +1,7 @@
-﻿using meetup_telegram_bot.Data.DbEntities;
-using meetup_telegram_bot.Factories;
-using meetup_telegram_bot.Infrastructure.Interfaces;
-using meetup_telegram_bot.SignalR.Models;
+﻿using meetup_telegram_bot.SignalR.Models;
+using MeetupTelegramBot.BusinessLayer.Factories;
+using MeetupTelegramBot.BusinessLayer.Interfaces;
+using MeetupTelegramBot.BusinessLayer.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace meetup_telegram_bot.Controllers
@@ -10,13 +10,13 @@ namespace meetup_telegram_bot.Controllers
     [Route("api/presentations")]
     public class PresentationsController : ControllerBase
     {
-        private readonly IQuestionRepository _questionRepository;
-        private readonly IPresentationRepository _presentationRepository;
+        private readonly IQuestionService _questionService;
+        private readonly IPresentationService _presentationService;
 
-        public PresentationsController(IQuestionRepository questionRepository, IPresentationRepository presentationRepository)
+        public PresentationsController(IQuestionService questionService, IPresentationService presentationService)
         {
-            _questionRepository=questionRepository;
-            _presentationRepository=presentationRepository;
+            _questionService = questionService;
+            _presentationService=presentationService;
         }
 
         /// <summary>
@@ -30,8 +30,8 @@ namespace meetup_telegram_bot.Controllers
             Guid presentationIdFromRoute;
             var questionsForPresentation = Guid.TryParse(presentationId, out presentationIdFromRoute);
 
-            var questionsFromDb = questionsForPresentation? await _questionRepository.GetByPresentationIdAsync(presentationIdFromRoute).ConfigureAwait(false) :
-                                                        new List<QuestionDbEntity>();
+            var questionsFromDb = questionsForPresentation? await _questionService.GetByPresentationIdAsync(presentationIdFromRoute).ConfigureAwait(false) :
+                                                        new List<QuestionDTO>();
 
 
             return questionsFromDb.ToModel();
@@ -44,7 +44,7 @@ namespace meetup_telegram_bot.Controllers
         [HttpGet]
         public async Task<List<PresentationModel>> GetDisplayedPresentations()
         {
-            var presentationsFromDb = await _presentationRepository.GetDisplayedAsync().ConfigureAwait(false);
+            var presentationsFromDb = await _presentationService.GetDisplayedAsync().ConfigureAwait(false);
             return presentationsFromDb.ToModel();
         }
         
@@ -56,7 +56,7 @@ namespace meetup_telegram_bot.Controllers
         [Route("all")]
         public async Task<List<PresentationModel>> GetPresentations()
         {
-            var presentationsFromDb = await _presentationRepository.GetAllAsync().ConfigureAwait(false);
+            var presentationsFromDb = await _presentationService.GetAllAsync().ConfigureAwait(false);
             return presentationsFromDb.ToModel();
         }
     }

@@ -1,6 +1,6 @@
-﻿using meetup_telegram_bot.Factories;
-using meetup_telegram_bot.Infrastructure.Interfaces;
-using meetup_telegram_bot.SignalR.Models;
+﻿using meetup_telegram_bot.SignalR.Models;
+using MeetupTelegramBot.BusinessLayer.Factories;
+using MeetupTelegramBot.BusinessLayer.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace meetup_telegram_bot.Controllers
@@ -9,17 +9,17 @@ namespace meetup_telegram_bot.Controllers
     [Route("api/questions")]
     public class QuestionsController
     {
-        private readonly IQuestionRepository _questionRepository;
+        private readonly IQuestionService _questionService;
 
-        public QuestionsController(IQuestionRepository questionRepository)
+        public QuestionsController(IQuestionService questionService)
         {
-            _questionRepository = questionRepository;
+            _questionService = questionService;
         }
 
         [HttpGet]
         public async Task<List<QuestionModel>> GetQuestions()
         {
-            var questionsFromDb = await _questionRepository.GetAllAsync().ConfigureAwait(false);
+            var questionsFromDb = await _questionService.GetAllAsync().ConfigureAwait(false);
             return questionsFromDb.ToModel();
         }
     }

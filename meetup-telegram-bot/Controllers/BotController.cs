@@ -1,7 +1,9 @@
 ﻿using meetup_telegram_bot.Data;
-using meetup_telegram_bot.Data.DbEntities;
-using meetup_telegram_bot.Infrastructure.Interfaces;
-using meetup_telegram_bot.Services;
+using MeetupTelegramBot.BusinessLayer.Interfaces;
+using MeetupTelegramBot.BusinessLayer.Models;
+using MeetupTelegramBot.BusinessLayer.Models.DTO;
+using MeetupTelegramBot.BusinessLayer.Services;
+using MeetupTelegramBot.DataAccess.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -14,11 +16,11 @@ namespace meetup_telegram_bot.Controllers
     [Route("api/bot")]
     public class BotController : ControllerBase
     {
-        private readonly TelegramBotClient client; 
-        private readonly IFeedbackRepository _feedbackRepository;
-        private readonly IQuestionRepository _questionRepository;
+        private readonly TelegramBotClient client;
+        private readonly IFeedbackService _feedbackService; 
         private readonly ClientStatesService _clientStatesService;
         private readonly INotificationService _notificationService;
+        private readonly IQuestionService _questionService;
 
         private const string TelegramBotToken = "TelegramBotToken";
         private const string AdminUserName = "AdminUserName";
@@ -29,10 +31,9 @@ namespace meetup_telegram_bot.Controllers
 
         public BotController(
             IConfiguration configuration, 
-            IFeedbackRepository feedbackRepository, 
             ClientStatesService clientStates,
-            IQuestionRepository questionRepository,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IFeedbackService feedbackService, IQuestionService questionService)
         {
             var token = configuration.GetSection("environmentVariables").GetValue<string>(TelegramBotToken);
             if (string.IsNullOrEmpty(token))
@@ -53,10 +54,10 @@ namespace meetup_telegram_bot.Controllers
                 throw new Exception("Not found admin chat id in configuration.");
             }
 
-            _feedbackRepository = feedbackRepository;
-            _questionRepository = questionRepository;
             _clientStatesService = clientStates;
             _notificationService = notificationService;
+            _feedbackService = feedbackService;
+            _questionService = questionService;
         }
 
         #region endpoints
@@ -113,7 +114,7 @@ namespace meetup_telegram_bot.Controllers
         
         private async Task ProcessLeavingFeedbackFutureProposal(Message message)
         {
-            var feedback = new FeedbackDbEntity
+            var feedback = new FeedbackDTO
             {
                 Id = Guid.NewGuid(),
                 Date = DateTime.Now.Date,
@@ -124,7 +125,7 @@ namespace meetup_telegram_bot.Controllers
             };
             try
             {
-                await _feedbackRepository.CreateAsync(feedback).ConfigureAwait(false);
+                await _feedbackService.CreateAsync(feedback).ConfigureAwait(false);
                 await _notificationService.SendFeedbackAsync(feedback).ConfigureAwait(false);
                 await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш фидбэк '{feedback.GeneralFeedback}' и предложения '{feedback.FutureProposal}' были сохранены под ником '{feedback.AuthorName}'", replyMarkup: GetButtons()).ConfigureAwait(false);
             }
@@ -161,7 +162,7 @@ namespace meetup_telegram_bot.Controllers
                     UserState.LeaveFeedback => throw new Exception($"Invalid user state = {clientService.UserState}"),
                     _ => throw new Exception($"Invalid user state = {clientService.UserState}")
                 };
-                var question = new QuestionDbEntity
+                var question = new QuestionDTO 
                 {
                     Id = Guid.NewGuid(),
                     Date = DateTime.Now.Date,
@@ -170,7 +171,7 @@ namespace meetup_telegram_bot.Controllers
                     PresentationId = presentationId,
                     Time = DateTime.Now.TimeOfDay
                 };
-                await _questionRepository.CreateAsync(question).ConfigureAwait(false);
+                await _questionService.CreateAsync(question).ConfigureAwait(false);
                 await _notificationService.SendQuestionAsync(question).ConfigureAwait(false);
                 await client.SendTextMessageAsync(message.Chat.Id, $"Спасибо, ваш вопрос '{question.Text}' и никнейм '{question.AuthorName}' были сохранены", replyMarkup: GetButtons()).ConfigureAwait(false);
             }
@@ -221,17 +222,17 @@ namespace meetup_telegram_bot.Controllers
             (
                 new List<List<KeyboardButton>>
                 {
-                    new List<KeyboardButton>
+                    new()
                     {
                         new KeyboardButton(text: MainKeyboard.FirstPresentationQuestion),
                         new KeyboardButton(text: MainKeyboard.SecondPresentationQuestion)
                     },
-                    new List<KeyboardButton>
+                    new()
                     {
                         new KeyboardButton(text: MainKeyboard.ThirdPresentationQuestion),
                         new KeyboardButton(text: MainKeyboard.OutOfPresentationQuestion)
                     },
-                    new List<KeyboardButton>
+                    new()
                     {
                         new KeyboardButton(text: MainKeyboard.LeaveFeedback),
                     }

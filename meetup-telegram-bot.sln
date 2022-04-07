@@ -5,6 +5,10 @@ VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "meetup-telegram-bot", "meetup-telegram-bot\meetup-telegram-bot.csproj", "{56FFD094-7D40-4744-BB8C-8A477D7397AB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetupTelegramBot.DataAccess", "MeetupTelegramBot.DataAccess\MeetupTelegramBot.DataAccess.csproj", "{CB38E9BC-7292-42AF-9908-AD7896F38428}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetupTelegramBot.BusinessLayer", "MeetupTelegramBot.BusinessLayer\MeetupTelegramBot.BusinessLayer.csproj", "{797EA4EF-0BDD-4752-A419-23929CC1AF53}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{56FFD094-7D40-4744-BB8C-8A477D7397AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56FFD094-7D40-4744-BB8C-8A477D7397AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56FFD094-7D40-4744-BB8C-8A477D7397AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB38E9BC-7292-42AF-9908-AD7896F38428}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB38E9BC-7292-42AF-9908-AD7896F38428}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB38E9BC-7292-42AF-9908-AD7896F38428}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB38E9BC-7292-42AF-9908-AD7896F38428}.Release|Any CPU.Build.0 = Release|Any CPU
+		{797EA4EF-0BDD-4752-A419-23929CC1AF53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{797EA4EF-0BDD-4752-A419-23929CC1AF53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{797EA4EF-0BDD-4752-A419-23929CC1AF53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{797EA4EF-0BDD-4752-A419-23929CC1AF53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
