@@ -32,5 +32,16 @@ namespace meetup_telegram_bot.Infrastructure.Repositories
                 .ToListAsync()
                 .ConfigureAwait(false);
         }
+
+        public async Task UpdateDisplayedPresentations(List<Guid> displayedPresentationsNewIds)
+        {
+            var oldPresentatnions = _databaseContext.Presentations.Where(p => p.IsDisplayed == true && p.Title != "");
+            await oldPresentatnions.ForEachAsync(x => x.IsDisplayed = false);
+
+            var newPresentations = _databaseContext.Presentations.Where(p => displayedPresentationsNewIds.Contains(p.Id));
+            
+            await newPresentations.ForEachAsync(x => x.IsDisplayed = true);
+            await _databaseContext.SaveChangesAsync();
+        }
     }
 }

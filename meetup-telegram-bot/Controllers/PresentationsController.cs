@@ -1,4 +1,6 @@
-﻿using meetup_telegram_bot.Data.DbEntities;
+﻿using meetup_telegram_bot.Controllers.Boundary.Request;
+using meetup_telegram_bot.Controllers.Boundary.Response;
+using meetup_telegram_bot.Data.DbEntities;
 using meetup_telegram_bot.Factories;
 using meetup_telegram_bot.Infrastructure.Interfaces;
 using meetup_telegram_bot.SignalR.Models;
@@ -44,7 +46,7 @@ namespace meetup_telegram_bot.Controllers
         [HttpGet]
         public async Task<List<PresentationModel>> GetDisplayedPresentations()
         {
-            var presentationsFromDb = await _presentationRepository.GetDisplayedAsync().ConfigureAwait(false);
+            var presentationsFromDb = await _presentationRepository.GetDisplayedAsync();
             return presentationsFromDb.ToModel();
         }
         
@@ -58,6 +60,35 @@ namespace meetup_telegram_bot.Controllers
         {
             var presentationsFromDb = await _presentationRepository.GetAllAsync().ConfigureAwait(false);
             return presentationsFromDb.ToModel();
+        }
+      
+        // ToDo : make endpoint to update isDisplayed
+        // ReDo static
+        [HttpPost]
+        public async Task<IActionResult> CreatePresentation([FromBody] PresentationForCreationDto presentationDto)
+        {
+            if (presentationDto == null)
+            {
+                return BadRequest("Model cannot be null");
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var presentationDb = presentationDto.ToDbEntity();
+            await _presentationRepository.CreateAsync(presentationDb);
+
+            return new ObjectResult(presentationDb) { StatusCode = StatusCodes.Status201Created };
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateDisplayedPresentations([FromBody] List<PresentationForUpdateDto> displayedPresentationsNewIds)
+        {
+            // ToDo: handle existence if exist
+
+            //
+            await _presentationRepository.UpdateDisplayedPresentations(displayedPresentationsNewIds.Select(x => x.Id).ToList());
+            return NoContent();
         }
     }
 }

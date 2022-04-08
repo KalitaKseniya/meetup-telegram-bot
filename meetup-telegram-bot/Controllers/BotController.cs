@@ -97,6 +97,7 @@ namespace meetup_telegram_bot.Controllers
                     case UserState.FirstPresentationQuestion:
                     case UserState.SecondPresentationQuestion:
                     case UserState.ThirdPresentationQuestion:
+                    case UserState.FourthPresentationQuestion:
                     case UserState.OutOfPresentationQuestion:
                         await ProcessPresentationQuestionAsync(message).ConfigureAwait(false);
                         break;
@@ -130,7 +131,7 @@ namespace meetup_telegram_bot.Controllers
             }
             catch (Exception ex)
             {
-                await client.SendTextMessageAsync(message.Chat.Id, $"Exception: {ex.Message}").ConfigureAwait(false);
+                await client.SendTextMessageAsync(adminChatId, $"Exception: {ex.Message}").ConfigureAwait(false);
             }
             _clientStatesService.ClientStates.Remove(message.Chat.Id);
         }
@@ -154,9 +155,10 @@ namespace meetup_telegram_bot.Controllers
                 // ToDo: fetch in another method
                 presentationId = clientService.UserState switch
                 {
-                    UserState.FirstPresentationQuestion => new Guid("fadabc27-40e4-47f3-bc1b-f0916b4772cd"),
-                    UserState.SecondPresentationQuestion => new Guid("0c03ba0b-3b46-42ba-ba39-6b635c9a4bc0"),
-                    UserState.ThirdPresentationQuestion => new Guid("99d09f48-0fec-4ef4-8292-2bab81de8d37"),
+                    UserState.FirstPresentationQuestion => new Guid("db121e8c-9a90-4d58-cb26-08da193993e3"),
+                    UserState.SecondPresentationQuestion => new Guid("0c90d5f2-7894-4446-cb27-08da193993e3"),
+                    UserState.ThirdPresentationQuestion => new Guid("ca63dc5f-4086-488e-cb28-08da193993e3"),
+                    UserState.FourthPresentationQuestion => new Guid("4dcac281-f7cd-4593-cb29-08da193993e3"),
                     UserState.OutOfPresentationQuestion => new Guid("958AE825-56F4-4390-90E3-4AA9741673A3"),
                     UserState.LeaveFeedback => throw new Exception($"Invalid user state = {clientService.UserState}"),
                     _ => throw new Exception($"Invalid user state = {clientService.UserState}")
@@ -201,6 +203,10 @@ namespace meetup_telegram_bot.Controllers
                     _clientStatesService.SetUserState(message.Chat.Id, UserState.ThirdPresentationQuestion);
                     await client.SendTextMessageAsync(message.Chat.Id, questionText, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
                     break;
+                case MainKeyboard.FourthPresentationQuestion:
+                    _clientStatesService.SetUserState(message.Chat.Id, UserState.FourthPresentationQuestion);
+                    await client.SendTextMessageAsync(message.Chat.Id, questionText, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
+                    break;
                 case MainKeyboard.OutOfPresentationQuestion:
                     _clientStatesService.SetUserState(message.Chat.Id, UserState.OutOfPresentationQuestion);
                     await client.SendTextMessageAsync(message.Chat.Id, questionText, replyMarkup: new ReplyKeyboardRemove()).ConfigureAwait(false);
@@ -229,10 +235,11 @@ namespace meetup_telegram_bot.Controllers
                     new List<KeyboardButton>
                     {
                         new KeyboardButton(text: MainKeyboard.ThirdPresentationQuestion),
-                        new KeyboardButton(text: MainKeyboard.OutOfPresentationQuestion)
+                        new KeyboardButton(text: MainKeyboard.FourthPresentationQuestion),
                     },
                     new List<KeyboardButton>
                     {
+                        new KeyboardButton(text: MainKeyboard.OutOfPresentationQuestion),
                         new KeyboardButton(text: MainKeyboard.LeaveFeedback),
                     }
                 }

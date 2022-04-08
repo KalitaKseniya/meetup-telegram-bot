@@ -5,6 +5,7 @@
         FirstPresentationQuestion,
         SecondPresentationQuestion,
         ThirdPresentationQuestion,
+        FourthPresentationQuestion,
         OutOfPresentationQuestion,
         LeaveFeedback
     }

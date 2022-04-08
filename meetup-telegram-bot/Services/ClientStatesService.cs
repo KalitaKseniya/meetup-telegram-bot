@@ -47,6 +47,7 @@ namespace meetup_telegram_bot.Services
                 userState != UserState.FirstPresentationQuestion &&  
                 userState != UserState.SecondPresentationQuestion &&
                 userState != UserState.ThirdPresentationQuestion &&
+                userState != UserState.FourthPresentationQuestion &&
                 userState != UserState.OutOfPresentationQuestion)
             )
             {

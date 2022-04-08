@@ -1,4 +1,5 @@
-﻿using meetup_telegram_bot.Data.DbEntities;
+﻿using meetup_telegram_bot.Controllers.Boundary.Request;
+using meetup_telegram_bot.Data.DbEntities;
 using meetup_telegram_bot.SignalR.Models;
 
 namespace meetup_telegram_bot.Factories
@@ -21,6 +22,17 @@ namespace meetup_telegram_bot.Factories
         {
             return dbEntities == null ? new List<PresentationModel>() : 
                 dbEntities.Select(x => x.ToModel()).ToList();
+        }
+
+        public static PresentationDbEntity ToDbEntity(this PresentationForCreationDto dbEntity)
+        {
+            return dbEntity == null ? new PresentationDbEntity() : new PresentationDbEntity
+            {
+                Description = dbEntity.Description,
+                SpeackerName = dbEntity.SpeackerName,
+                Title = dbEntity.Title,
+                IsDisplayed = dbEntity.IsDisplayed,
+            };
         }
     }
 }
