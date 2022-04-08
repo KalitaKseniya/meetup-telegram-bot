@@ -1,6 +1,7 @@
 ﻿using MeetupTelegramBot.DataAccess.Contexts;
 using MeetupTelegramBot.DataAccess.Entities;
 using MeetupTelegramBot.DataAccess.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace MeetupTelegramBot.DataAccess.Repositories
 {
@@ -13,19 +14,21 @@ namespace MeetupTelegramBot.DataAccess.Repositories
             _databaseContext = databaseContext;
         }
 
-        public Task CreateAsync(FeedbackEntity entity)
+        public async Task CreateAsync(FeedbackEntity entity)
         {
-            throw new NotImplementedException();
+            _databaseContext.Feedbacks.Add(entity);
+
+            _databaseContext.SaveChanges();
         }
 
-        public Task<List<FeedbackEntity>> GetAllAsync()
+        public async Task<List<FeedbackEntity>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await _databaseContext.Feedbacks.ToListAsync();
         }
 
-        public Task<FeedbackEntity> GetByIdAsync(Guid id)
+        public async Task<FeedbackEntity> GetByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            return await _databaseContext.Feedbacks.Where(f => f.Id == id).FirstOrDefaultAsync();
         }
     }
 }

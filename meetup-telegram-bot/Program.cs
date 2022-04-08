@@ -17,7 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 ConfigurationManager configuration = builder.Configuration;
 builder.Services.AddDbContext<DatabaseContext>(opt =>
-                    opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+                    opt.UseSqlServer(@"Server=(LocalDb)\MSSqlLocalDB;Database=ProjectDatabase;Trusted_Connection=True;"));
 
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
