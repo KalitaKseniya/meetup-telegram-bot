@@ -21,23 +21,18 @@ namespace meetup_telegram_bot.Controllers
         public PresentationsController(IQuestionService questionService, IPresentationService presentationService)
         {
             _questionService = questionService;
-            _presentationService=presentationService;
+            _presentationService = presentationService;
         }
 
         /// <summary>
-        /// Endpoint to get questions for a speceific presentations (by presentation id) or to get questions out of presentation (by default word)
+        /// Endpoint to get questions for a speceific presentations (by presentation id) 
         /// </summary>
-        /// <param name="presentationId">Id of presentation (Guid) or "default" for questions out of presentation</param>
+        /// <param name="presentationId">Id of presentation (Guid) </param>
         /// <returns></returns>
         [HttpGet("{presentationId}/questions")]
-        public async Task<List<QuestionModel>> GetQuestionsByPresentationId(string presentationId)
+        public async Task<List<QuestionModel>> GetQuestionsByPresentationId(Guid presentationId)
         {
-            Guid presentationIdFromRoute;
-            var questionsForPresentation = Guid.TryParse(presentationId, out presentationIdFromRoute);
-
-            var questionsFromDb = questionsForPresentation? await _questionService.GetByPresentationIdAsync(presentationIdFromRoute).ConfigureAwait(false) :
-                                                        new List<QuestionDTO>();
-
+            var questionsFromDb = await _questionService.GetByPresentationIdAsync(presentationId);
 
             return questionsFromDb.ToModel();
         }
@@ -49,10 +44,10 @@ namespace meetup_telegram_bot.Controllers
         [HttpGet]
         public async Task<List<PresentationModel>> GetDisplayedPresentations()
         {
-            var presentationsFromDb = await _presentationRepository.GetDisplayedAsync();
+            var presentationsFromDb = await _presentationService.GetDisplayedAsync();
             return presentationsFromDb.ToModel();
         }
-        
+
         /// <summary>
         /// Returns a list of all presentations
         /// </summary>

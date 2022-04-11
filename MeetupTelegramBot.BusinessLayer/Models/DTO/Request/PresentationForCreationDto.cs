@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace meetup_telegram_bot.Controllers.Boundary.Request
+namespace MeetupTelegramBot.BusinessLayer.Models.DTO.Request
 {
     public class PresentationForCreationDto
     {

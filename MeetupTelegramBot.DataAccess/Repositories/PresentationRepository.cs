@@ -2,31 +2,51 @@
 using MeetupTelegramBot.DataAccess.Entities;
 using MeetupTelegramBot.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace MeetupTelegramBot.DataAccess.Repositories
 {
-    public class PresentationRepository : IPresentationRepository
+    public class PresentationRepository : RepositoryBase<PresentationEntity>, IPresentationRepository
     {
         private readonly DatabaseContext _databaseContext;
 
         public PresentationRepository(DatabaseContext databaseContext)
+            : base(databaseContext)
         {
-            _databaseContext = databaseContext;
         }
 
-        public Task CreateAsync(PresentationEntity entity)
+        public async Task CreateAsync(PresentationEntity dbEntity)
         {
-            throw new NotImplementedException();
+            await _databaseContext.Presentations.AddAsync(dbEntity);
+            await _databaseContext.SaveChangesAsync();
         }
 
-        public Task<List<PresentationEntity>> GetAllAsync()
+        public async Task<List<PresentationEntity>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await _databaseContext.Presentations
+                .ToListAsync();
         }
 
-        public Task<List<PresentationEntity>> GetDisplayedAsync()
+        public async Task<List<PresentationEntity>> GetDisplayedAsync()
         {
-            throw new NotImplementedException();
+            return await _databaseContext.Presentations
+                .Where(x => x.IsDisplayed == true)
+                .ToListAsync();
+        }
+
+        public bool PresentationExist(Guid id) 
+        { 
+            return _databaseContext.Presentations.Any(p => p.Id == id);
+        }
+
+        public IQueryable<PresentationEntity> FindByCondition(Expression<Func<PresentationEntity, bool>> expression)
+        {
+            return _databaseContext.Presentations.Where(expression);
+        }
+
+        public async Task SaveChagesAsync()
+        {
+            await _databaseContext.SaveChangesAsync();
         }
     }
 }

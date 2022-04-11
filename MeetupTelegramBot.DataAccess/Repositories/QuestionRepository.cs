@@ -14,19 +14,26 @@ namespace MeetupTelegramBot.DataAccess.Repositories
             _databaseContext = databaseContext;
         }
 
-        public Task CreateAsync(QuestionEntity entity)
+        public async Task CreateAsync(QuestionEntity entity)
         {
-            throw new NotImplementedException();
+            await _databaseContext.Questions.AddAsync(entity);
+            await _databaseContext.SaveChangesAsync();
         }
 
-        public Task<List<QuestionEntity>> GetAllAsync()
+        public async Task<List<QuestionEntity>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await _databaseContext.Questions
+                .OrderByDescending(q => q.Date)
+                .ThenByDescending(q => q.Time)
+                .ToListAsync();
         }
 
-        public Task<List<QuestionEntity>> GetByPresentationIdAsync(Guid? presentationId)
+        public async Task<List<QuestionEntity>> GetByPresentationIdAsync(Guid presentationId)
         {
-            throw new NotImplementedException();
+            return await _databaseContext.Questions.Where(q => q.PresentationId == presentationId)
+                .OrderByDescending(q => q.Date)
+                .ThenByDescending(q => q.Time)
+                .ToListAsync();
         }
     }
 }
