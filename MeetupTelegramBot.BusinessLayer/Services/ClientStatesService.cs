@@ -46,6 +46,7 @@ namespace MeetupTelegramBot.BusinessLayer.Services
                 userState != UserState.FirstPresentationQuestion &&  
                 userState != UserState.SecondPresentationQuestion &&
                 userState != UserState.ThirdPresentationQuestion &&
+                userState != UserState.FourthPresentationQuestion &&
                 userState != UserState.OutOfPresentationQuestion)
             )
             {
