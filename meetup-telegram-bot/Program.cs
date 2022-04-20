@@ -29,7 +29,6 @@ builder.Services.AddScoped<IPresentationService, PresentationService>();
 builder.Services.AddSingleton<INotificationService, NotificationService>();
 builder.Services.AddSingleton<ClientStatesService>();
 builder.Services.AddAutoMapper(typeof(MapperProfile));
-
 builder.Services.AddSignalR();
 builder.Services.AddCors();
 

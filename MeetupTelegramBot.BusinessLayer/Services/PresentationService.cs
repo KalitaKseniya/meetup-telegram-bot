@@ -45,9 +45,9 @@ public class PresentationService : IPresentationService
     public async Task UpdateDisplayedAsync(List<PresentationForUpdateDto> presentationsToUpdate)
     {
         var ids = presentationsToUpdate.Select(p => p.Id).ToList();
-        var allIdsExist = _presentationRepository.ContainsAll(ids);
+        var notContainAll = _presentationRepository.NotContainsAll(ids);
 
-        if (!allIdsExist)
+        if (notContainAll)
         {
             throw new EntityNotFoundException("One or more ids are not found in the database.");
         }

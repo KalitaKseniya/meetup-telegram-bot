@@ -41,7 +41,7 @@ namespace MeetupTelegramBot.DataAccess.Repositories
             return base.FindByCondition(expression, trackChanges);
         }
 
-        public bool ContainsAll(List<Guid> ids)
+        public bool NotContainsAll(List<Guid> ids)
         {
             return ids.Any(id => !base.FindAll(false)
                                     .Select(p => p.Id)

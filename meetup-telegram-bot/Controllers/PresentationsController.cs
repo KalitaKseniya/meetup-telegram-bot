@@ -81,7 +81,7 @@ namespace meetup_telegram_bot.Controllers
         public async Task<IActionResult> UpdateDisplayedPresentations([FromBody] List<PresentationForUpdateDto> presentationsToUpdate)
         {
             await _presentationService.UpdateDisplayedAsync(presentationsToUpdate);
-            await _clientStatesService.ReloadDisplayedPresentations();
+            await _clientStatesService.SetPresentationsAsync();
             return NoContent();
         }
     }

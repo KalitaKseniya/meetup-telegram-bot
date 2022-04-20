@@ -9,7 +9,7 @@ namespace MeetupTelegramBot.BusinessLayer.Factories
         {
             return dbEntity == null ? new QuestionModel() : new QuestionModel
             {
-                Asked = dbEntity.Asked,
+                Asked = dbEntity.Date.Add(dbEntity.Time),
                 AuthorName = dbEntity.AuthorName,
                 PresentationId = dbEntity.PresentationId,
                 QuestionText = dbEntity.Text

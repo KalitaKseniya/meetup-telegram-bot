@@ -12,7 +12,7 @@ namespace MeetupTelegramBot.BusinessLayer.Factories
                 AuthorName = dbEntity.AuthorName,
                 FutureProposal = dbEntity.FutureProposal,
                 Message = dbEntity.GeneralFeedback,
-                Sent = dbEntity.Sent
+                Sent = dbEntity.Date.Add(dbEntity.Time)
             };
         }
 

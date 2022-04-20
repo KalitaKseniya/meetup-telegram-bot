@@ -2,10 +2,12 @@
 using meetup_telegram_bot.SignalR.Models;
 using MeetupTelegramBot.BusinessLayer.Interfaces;
 using MeetupTelegramBot.BusinessLayer.Models;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 
 namespace MeetupTelegramBot.BusinessLayer.Services
 {
-    public class InputInfo//ToDo: implement getters and setters so Only Feedback or Questions can be at the same time
+    public class InputInfo
     {
         public string UserState { get; set; }
         public string FeedbackGeneralFeedback { get; set; }
@@ -14,17 +16,38 @@ namespace MeetupTelegramBot.BusinessLayer.Services
 
     public class ClientStatesService
     {
-        private readonly IPresentationService _presentationService;
-        private readonly IMapper _mapper;
-        public List<PresentationModel> Presentations { get; private set; }
+        private readonly HttpClient _httpClient;
+        private readonly string _apiUrl;
+
+        private List<PresentationModel> presentations;
+        public List<PresentationModel> Presentations 
+        {
+            get
+            {
+                if (presentations == null)
+                {
+                    Task.Run(() => SetPresentationsAsync()).Wait();
+                }
+                return presentations;
+            }
+            private set
+            {
+                presentations = value;
+            }
+        }
         public const string LeaveFeedback = "Оставить отзыв";
         public Dictionary<long, InputInfo> ClientStates { get; private set; }
-        
-        public ClientStatesService(IMapper mapper, IPresentationService presentationService)
+
+        public ClientStatesService(IConfiguration configuration)
         {
-            _mapper = mapper;
-            _presentationService = presentationService;
             ClientStates = new Dictionary<long, InputInfo>();
+            _httpClient = new HttpClient();
+
+            _apiUrl = configuration.GetSection("environmentVariables")["ApiUrl"];
+            if (string.IsNullOrEmpty(_apiUrl))
+            {
+                throw new Exception("Not found api url in configuration.");
+            }
         }
 
         public void SetUserState(long chatId, string userState)
@@ -64,12 +87,6 @@ namespace MeetupTelegramBot.BusinessLayer.Services
             };
         }
         
-        public async Task ReloadDisplayedPresentations()
-        {
-            var presentationsDto = await _presentationService.GetDisplayedAsync();//ToDOo: call via httpl client?
-            Presentations = _mapper.Map<List<PresentationModel>>(presentationsDto);
-        }
-
         public bool IsPresentation(string presentationTitle)
         {
             return Presentations.Any(p => p.Title == presentationTitle);
@@ -94,5 +111,23 @@ namespace MeetupTelegramBot.BusinessLayer.Services
             return Presentations.First(p => p.Title == title).Id;
         }
 
+        public async Task SetPresentationsAsync()
+        {
+            presentations = await LoadPresentationsAsync();
+        }
+
+        public async Task<List<PresentationModel>> LoadPresentationsAsync()
+        {
+            var serverResponse = await _httpClient.GetAsync(_apiUrl + "api/presentations");
+
+            if (serverResponse.IsSuccessStatusCode)
+            {
+                var stringContent = await serverResponse.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<List<PresentationModel>>(stringContent) ?? new List<PresentationModel>();
+            }
+
+            return new List<PresentationModel>();
+        }
     }
 }

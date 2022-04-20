@@ -23,7 +23,10 @@ namespace MeetupTelegramBot.DataAccess.Repositories
 
         public async Task<List<FeedbackEntity>> GetAllAsync()
         {
-            return await _databaseContext.Feedbacks.ToListAsync();
+            return await _databaseContext.Feedbacks
+                .Where(p => p.Date == DateTime.Today.Date)
+                .OrderByDescending(p => p.Time)
+                .ToListAsync();
         }
 
         public async Task<FeedbackEntity> GetByIdAsync(Guid id)

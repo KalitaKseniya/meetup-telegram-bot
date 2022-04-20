@@ -11,7 +11,7 @@ namespace MeetupTelegramBot.DataAccess.Interfaces
         Task<List<PresentationEntity>> GetDisplayedAsync();
         bool PresentationExist(Guid id);
         IQueryable<PresentationEntity> FindByCondition(Expression<Func<PresentationEntity, bool>> expression, bool trackChanges);
-        bool ContainsAll(List<Guid> ids);
+        bool NotContainsAll(List<Guid> ids);
         Task SaveChangesAsync();
     }
 }

@@ -116,7 +116,8 @@ namespace meetup_telegram_bot.Controllers
             var feedback = new FeedbackDTO
             {
                 Id = Guid.NewGuid(),
-                Sent = DateTime.Now,
+                Date = DateTime.Now,
+                Time = DateTime.Now.TimeOfDay,
                 FutureProposal = message.Text,
                 GeneralFeedback = _clientStatesService.ClientStates[message.Chat.Id].FeedbackGeneralFeedback,
                 AuthorName = AuthorNameGenerator.Generate()
@@ -153,7 +154,8 @@ namespace meetup_telegram_bot.Controllers
                 var question = new QuestionDTO 
                 {
                     Id = Guid.NewGuid(),
-                    Asked = DateTime.Now,
+                    Date = DateTime.Now.Date,
+                    Time = DateTime.Now.TimeOfDay,
                     Text = clientState.QuestionText,
                     AuthorName = AuthorNameGenerator.Generate(),
                     PresentationId = presentationId,
@@ -192,7 +194,7 @@ namespace meetup_telegram_bot.Controllers
             }
         }
 
-        public IReplyMarkup GetButtons()
+        private IReplyMarkup GetButtons()
         {
             var presentations = _clientStatesService.GetPresentations();
             
@@ -205,6 +207,7 @@ namespace meetup_telegram_bot.Controllers
                     keyboardButtons.Add(new()
                     {
                         new KeyboardButton(text: presentations[i]),
+                        new KeyboardButton(text: ClientStatesService.LeaveFeedback),
                     });
                 }
                 else 
@@ -214,6 +217,13 @@ namespace meetup_telegram_bot.Controllers
                         new KeyboardButton(text: presentations[i]),
                         new KeyboardButton(text: presentations[i + 1]),
                     });
+                    if (i + 2 == presentations.Count)
+                    {
+                        keyboardButtons.Add(new()
+                        {
+                            new KeyboardButton(text: ClientStatesService.LeaveFeedback),
+                        });
+                    }
                 }
             }
             return new ReplyKeyboardMarkup
