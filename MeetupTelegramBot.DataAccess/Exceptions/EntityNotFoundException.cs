@@ -7,5 +7,11 @@
         {
 
         }
+        
+        public EntityNotFoundException(string message)
+            : base(message)
+        {
+
+        }
     }
 }

@@ -34,5 +34,7 @@ namespace MeetupTelegramBot.DataAccess.Repositories
         public void Create(T entity) => _databaseContext.Set<T>().Add(entity);
         public void Update(T entity) => _databaseContext.Set<T>().Update(entity);
         public void Delete(T entity) => _databaseContext.Set<T>().Remove(entity);
+
+        public async Task SaveChangesAsync() => await _databaseContext.SaveChangesAsync();
     }
 }

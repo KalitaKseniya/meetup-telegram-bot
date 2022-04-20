@@ -16,7 +16,7 @@ namespace MeetupTelegramBot.DataAccess.Repositories
 
         public async Task CreateAsync(FeedbackEntity entity)
         {
-            _databaseContext.Feedbacks.Add(entity);
+            await _databaseContext.Feedbacks.AddAsync(entity);
 
             _databaseContext.SaveChanges();
         }

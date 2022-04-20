@@ -28,7 +28,7 @@ namespace MeetupTelegramBot.BusinessLayer.Services
 
             var feedback = feedbackEntity.ToModel(); 
 
-            await _hubContext.Clients.All.SendFeedback(feedback).ConfigureAwait(false);
+            await _hubContext.Clients.All.SendFeedback(feedback);
         }
         
         public async Task SendQuestionAsync(QuestionDTO questionEntity)
@@ -40,7 +40,7 @@ namespace MeetupTelegramBot.BusinessLayer.Services
 
             var question = questionEntity.ToModel(); 
 
-            await _hubContext.Clients.All.SendQuestion(question).ConfigureAwait(false);
+            await _hubContext.Clients.All.SendQuestion(question);
         }
     }
 }

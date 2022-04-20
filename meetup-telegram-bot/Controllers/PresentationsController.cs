@@ -1,12 +1,10 @@
-﻿using meetup_telegram_bot.Controllers.Boundary.Request;
-using meetup_telegram_bot.Controllers.Boundary.Response;
-using meetup_telegram_bot.Data.DbEntities;
-using meetup_telegram_bot.Factories;
-using meetup_telegram_bot.Infrastructure.Interfaces;
-using meetup_telegram_bot.SignalR.Models;
+﻿using meetup_telegram_bot.SignalR.Models;
 using MeetupTelegramBot.BusinessLayer.Factories;
 using MeetupTelegramBot.BusinessLayer.Interfaces;
 using MeetupTelegramBot.BusinessLayer.Models.DTO;
+using MeetupTelegramBot.BusinessLayer.Models.DTO.Request;
+using MeetupTelegramBot.BusinessLayer.Services;
+using MeetupTelegramBot.DataAccess.Contexts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace meetup_telegram_bot.Controllers
@@ -17,11 +15,14 @@ namespace meetup_telegram_bot.Controllers
     {
         private readonly IQuestionService _questionService;
         private readonly IPresentationService _presentationService;
+        private readonly ClientStatesService _clientStatesService;
 
-        public PresentationsController(IQuestionService questionService, IPresentationService presentationService)
+
+        public PresentationsController(IQuestionService questionService, ClientStatesService clientStates, IPresentationService presentationService)
         {
             _questionService = questionService;
             _presentationService = presentationService;
+            _clientStatesService = clientStates;
         }
 
         /// <summary>
@@ -32,9 +33,9 @@ namespace meetup_telegram_bot.Controllers
         [HttpGet("{presentationId}/questions")]
         public async Task<List<QuestionModel>> GetQuestionsByPresentationId(Guid presentationId)
         {
-            var questionsFromDb = await _questionService.GetByPresentationIdAsync(presentationId);
+            var questionsDto = await _questionService.GetByPresentationIdAsync(presentationId);
 
-            return questionsFromDb.ToModel();
+            return questionsDto.ToModel();
         }
 
         /// <summary>
@@ -44,8 +45,8 @@ namespace meetup_telegram_bot.Controllers
         [HttpGet]
         public async Task<List<PresentationModel>> GetDisplayedPresentations()
         {
-            var presentationsFromDb = await _presentationService.GetDisplayedAsync();
-            return presentationsFromDb.ToModel();
+            var displayedPresentations = await _presentationService.GetDisplayedAsync();
+            return displayedPresentations.ToModel();
         }
 
         /// <summary>
@@ -54,14 +55,12 @@ namespace meetup_telegram_bot.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("all")]
-        public async Task<List<PresentationModel>> GetPresentations()
+        public async Task<  List<PresentationModel>> GetPresentations()
         {
-            var presentationsFromDb = await _presentationService.GetAllAsync().ConfigureAwait(false);
-            return presentationsFromDb.ToModel();
+            var presentations = await _presentationService.GetAllAsync();
+            return presentations.ToModel();
         }
       
-        // ToDo : make endpoint to update isDisplayed
-        // ReDo static
         [HttpPost]
         public async Task<IActionResult> CreatePresentation([FromBody] PresentationForCreationDto presentationDto)
         {
@@ -73,19 +72,16 @@ namespace meetup_telegram_bot.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var presentationDb = presentationDto.ToDbEntity();
-            await _presentationRepository.CreateAsync(presentationDb);
+            var createdPresentation = await _presentationService.CreateAsync(presentationDto);
 
-            return new ObjectResult(presentationDb) { StatusCode = StatusCodes.Status201Created };
+            return new ObjectResult(createdPresentation) { StatusCode = StatusCodes.Status201Created };
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateDisplayedPresentations([FromBody] List<PresentationForUpdateDto> displayedPresentationsNewIds)
+        public async Task<IActionResult> UpdateDisplayedPresentations([FromBody] List<PresentationForUpdateDto> presentationsToUpdate)
         {
-            // ToDo: handle existence if exist
-
-            //
-            await _presentationRepository.UpdateDisplayedPresentations(displayedPresentationsNewIds.Select(x => x.Id).ToList());
+            await _presentationService.UpdateDisplayedAsync(presentationsToUpdate);
+            await _clientStatesService.ReloadDisplayedPresentations();
             return NoContent();
         }
     }

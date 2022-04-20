@@ -1,14 +1,17 @@
 ﻿using MeetupTelegramBot.DataAccess.Entities;
 using MeetupTelegramBot.DataAccess.Repositories;
+using System.Linq.Expressions;
 
 namespace MeetupTelegramBot.DataAccess.Interfaces
 {
     public interface IPresentationRepository
     {
-        Task CreateAsync(PresentationEntity entity);
+        void Create(PresentationEntity entity);
         Task<List<PresentationEntity>> GetAllAsync();
         Task<List<PresentationEntity>> GetDisplayedAsync();
-        Task UpdateDisplayedAsync(List<Guid> displayedPresentationsNewIds);
         bool PresentationExist(Guid id);
+        IQueryable<PresentationEntity> FindByCondition(Expression<Func<PresentationEntity, bool>> expression, bool trackChanges);
+        bool ContainsAll(List<Guid> ids);
+        Task SaveChangesAsync();
     }
 }

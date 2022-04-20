@@ -19,7 +19,7 @@ namespace meetup_telegram_bot.Controllers
         [HttpGet]
         public async Task<List<QuestionModel>> GetQuestions()
         {
-            var questionsFromDb = await _questionService.GetAllAsync().ConfigureAwait(false);
+            var questionsFromDb = await _questionService.GetAllAsync();
             return questionsFromDb.ToModel();
         }
     }

@@ -20,10 +20,14 @@ public class PresentationService : IPresentationService
         _mapper = mapper;
     }
 
-    public async Task CreateAsync(PresentationDTO presentationDto)
+    public async Task<PresentationDTO> CreateAsync(PresentationForCreationDto presentationDto)
     {
         var entity = _mapper.Map<PresentationEntity>(presentationDto);
-        await _presentationRepository.CreateAsync(entity);
+        
+        _presentationRepository.Create(entity);
+        await _presentationRepository.SaveChangesAsync();
+
+        return _mapper.Map<PresentationDTO>(entity);
     }
 
     public async Task<List<PresentationDTO>> GetAllAsync()
@@ -40,6 +44,14 @@ public class PresentationService : IPresentationService
     
     public async Task UpdateDisplayedAsync(List<PresentationForUpdateDto> presentationsToUpdate)
     {
+        var ids = presentationsToUpdate.Select(p => p.Id).ToList();
+        var allIdsExist = _presentationRepository.ContainsAll(ids);
+
+        if (!allIdsExist)
+        {
+            throw new EntityNotFoundException("One or more ids are not found in the database.");
+        }
+
         var presentationsIdsToUpdate = presentationsToUpdate.Select(x => x.Id).ToList();
         foreach (var id in presentationsIdsToUpdate)
         {
@@ -51,13 +63,12 @@ public class PresentationService : IPresentationService
             }
         }
 
-        var oldPresentatnions = _presentationRepository.FindByCondition(p => p.IsDisplayed == true);
+        var oldPresentatnions = _presentationRepository.FindByCondition(p => p.IsDisplayed == true, true);
         await oldPresentatnions.ForEachAsync(x => x.IsDisplayed = false);
         
-        var newPresentations = _presentationRepository.FindByCondition(p => presentationsIdsToUpdate.Contains(p.Id));
+        var newPresentations = _presentationRepository.FindByCondition(p => presentationsIdsToUpdate.Contains(p.Id), true);
         await newPresentations.ForEachAsync(x => x.IsDisplayed = true);
 
-        _presentationRepository
-        await _presentationRepository.UpdateDisplayedAsync(presentationsIdsToUpdate);
+        await _presentationRepository.SaveChangesAsync();
     }
 }

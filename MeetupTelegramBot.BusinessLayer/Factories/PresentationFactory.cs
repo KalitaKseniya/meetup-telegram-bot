@@ -1,7 +1,7 @@
-﻿using meetup_telegram_bot.Controllers.Boundary.Request;
-using meetup_telegram_bot.Data.DbEntities;
-using meetup_telegram_bot.SignalR.Models;
+﻿using meetup_telegram_bot.SignalR.Models;
 using MeetupTelegramBot.BusinessLayer.Models.DTO;
+using MeetupTelegramBot.BusinessLayer.Models.DTO.Request;
+using MeetupTelegramBot.DataAccess.Entities;
 
 namespace MeetupTelegramBot.BusinessLayer.Factories
 {
@@ -25,9 +25,9 @@ namespace MeetupTelegramBot.BusinessLayer.Factories
                 dbEntities.Select(x => x.ToModel()).ToList();
         }
 
-        public static PresentationDbEntity ToDbEntity(this PresentationForCreationDto dbEntity)
+        public static PresentationEntity ToDbEntity(this PresentationForCreationDto dbEntity)
         {
-            return dbEntity == null ? new PresentationDbEntity() : new PresentationDbEntity
+            return dbEntity == null ? new PresentationEntity() : new PresentationEntity
             {
                 Description = dbEntity.Description,
                 SpeackerName = dbEntity.SpeackerName,

@@ -2,51 +2,55 @@
 using MeetupTelegramBot.DataAccess.Entities;
 using MeetupTelegramBot.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace MeetupTelegramBot.DataAccess.Repositories
 {
     public class PresentationRepository : RepositoryBase<PresentationEntity>, IPresentationRepository
     {
-        private readonly DatabaseContext _databaseContext;
-
         public PresentationRepository(DatabaseContext databaseContext)
             : base(databaseContext)
         {
         }
 
-        public async Task CreateAsync(PresentationEntity dbEntity)
+        public void Create(PresentationEntity dbEntity)
         {
-            await _databaseContext.Presentations.AddAsync(dbEntity);
-            await _databaseContext.SaveChangesAsync();
+            base.Create(dbEntity);
         }
 
         public async Task<List<PresentationEntity>> GetAllAsync()
         {
-            return await _databaseContext.Presentations
+            return await base.FindAll(false)
                 .ToListAsync();
         }
 
         public async Task<List<PresentationEntity>> GetDisplayedAsync()
         {
-            return await _databaseContext.Presentations
-                .Where(x => x.IsDisplayed == true)
+            return await base.FindByCondition(x => x.IsDisplayed == true, false)
                 .ToListAsync();
         }
 
         public bool PresentationExist(Guid id) 
         { 
-            return _databaseContext.Presentations.Any(p => p.Id == id);
+            return base.FindAll(false).Any(p => p.Id == id);
         }
 
-        public IQueryable<PresentationEntity> FindByCondition(Expression<Func<PresentationEntity, bool>> expression)
+        public IQueryable<PresentationEntity> FindByCondition(Expression<Func<PresentationEntity, bool>> expression, bool trackChanges)
         {
-            return _databaseContext.Presentations.Where(expression);
+            return base.FindByCondition(expression, trackChanges);
         }
 
-        public async Task SaveChagesAsync()
+        public bool ContainsAll(List<Guid> ids)
         {
-            await _databaseContext.SaveChangesAsync();
+            return ids.Any(id => !base.FindAll(false)
+                                    .Select(p => p.Id)
+                                    .Contains(id));
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await base.SaveChangesAsync();
         }
     }
 }

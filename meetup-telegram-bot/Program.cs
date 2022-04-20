@@ -1,3 +1,4 @@
+using meetup_telegram_bot.Infrastructure;
 using MeetupTelegramBot.BusinessLayer.Configuration;
 using MeetupTelegramBot.BusinessLayer.Interfaces;
 using MeetupTelegramBot.BusinessLayer.Services;
@@ -17,7 +18,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 ConfigurationManager configuration = builder.Configuration;
 builder.Services.AddDbContext<DatabaseContext>(opt =>
-                    opt.UseSqlServer(@"Server=(LocalDb)\MSSqlLocalDB;Database=ProjectDatabase;Trusted_Connection=True;"));
+                    opt.UseSqlServer(@"Server=tcp:mysqlserver310322.database.windows.net,1433;Initial Catalog=MeetupFeedbacks;Persist Security Info=False;User ID=sql_admin;Password=Password310322;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"));
 
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
@@ -41,7 +42,9 @@ if (app.Environment.IsDevelopment())
 }
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionMiddleware>();
+//app.UseHttpsRedirection();
 
 app.UseCors(builder => builder
                .AllowAnyMethod()

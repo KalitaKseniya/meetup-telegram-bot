@@ -8,11 +8,11 @@ namespace MeetupTelegramBot.BusinessLayer.SignalR
     {
         public async Task SendFeedback(FeedbackModel feedback)
         {
-            await Clients.All.SendFeedback(feedback).ConfigureAwait(false);
+            await Clients.All.SendFeedback(feedback);
         }
         public async Task SendQuestion(QuestionModel question)
         {
-            await Clients.All.SendQuestion(question).ConfigureAwait(false);
+            await Clients.All.SendQuestion(question);
         }
     }
 }

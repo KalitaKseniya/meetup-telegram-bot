@@ -19,7 +19,7 @@ namespace meetup_telegram_bot.Controllers
         [HttpGet]
         public async Task<List<FeedbackModel>> GetFeedbacks()
         {
-            var feedbacksFromDb = await _feedbackService.GetAllAsync().ConfigureAwait(false);
+            var feedbacksFromDb = await _feedbackService.GetAllAsync();
             return feedbacksFromDb.ToModel();
         }
     }
