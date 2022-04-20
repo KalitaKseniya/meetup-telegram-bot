@@ -1,8 +1,11 @@
 using meetup_telegram_bot.Infrastructure;
-using meetup_telegram_bot.Infrastructure.Interfaces;
-using meetup_telegram_bot.Infrastructure.Repositories;
-using meetup_telegram_bot.Services;
-using meetup_telegram_bot.SignalR;
+using MeetupTelegramBot.BusinessLayer.Configuration;
+using MeetupTelegramBot.BusinessLayer.Interfaces;
+using MeetupTelegramBot.BusinessLayer.Services;
+using MeetupTelegramBot.BusinessLayer.SignalR;
+using MeetupTelegramBot.DataAccess.Contexts;
+using MeetupTelegramBot.DataAccess.Interfaces;
+using MeetupTelegramBot.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,14 +18,17 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 ConfigurationManager configuration = builder.Configuration;
 builder.Services.AddDbContext<DatabaseContext>(opt =>
-                    opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+                    opt.UseSqlServer(@"Server=tcp:mysqlserver310322.database.windows.net,1433;Initial Catalog=MeetupFeedbacks;Persist Security Info=False;User ID=sql_admin;Password=Password310322;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"));
 
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IPresentationRepository, PresentationRepository>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<IPresentationService, PresentationService>();
 builder.Services.AddSingleton<INotificationService, NotificationService>();
 builder.Services.AddSingleton<ClientStatesService>();
-
+builder.Services.AddAutoMapper(typeof(MapperProfile));
 builder.Services.AddSignalR();
 builder.Services.AddCors();
 
@@ -35,7 +41,9 @@ if (app.Environment.IsDevelopment())
 }
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionMiddleware>();
+//app.UseHttpsRedirection();
 
 app.UseCors(builder => builder
                .AllowAnyMethod()
