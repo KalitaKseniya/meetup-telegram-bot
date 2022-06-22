@@ -35,4 +35,10 @@
     <Folder Include="Properties\ServiceDependencies\meetup-telegram-bot20220331170012 - Web Deploy\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
