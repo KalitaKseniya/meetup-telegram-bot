@@ -18,7 +18,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 ConfigurationManager configuration = builder.Configuration;
 builder.Services.AddDbContext<DatabaseContext>(opt =>
-                    opt.UseSqlServer(@"Server=tcp:mysqlserver310322.database.windows.net,1433;Initial Catalog=MeetupFeedbacks;Persist Security Info=False;User ID=sql_admin;Password=Password310322;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"));
+                    opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();

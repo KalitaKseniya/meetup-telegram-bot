@@ -9,7 +9,7 @@ namespace MeetupTelegramBot.DataAccess.Contexts
         public DbSet<FeedbackEntity> Feedbacks { get; set; }
         public DbSet<PresentationEntity> Presentations { get; set; }
 
-        public DatabaseContext(DbContextOptions options) : base(options)
+        public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
         {
         }
     }
