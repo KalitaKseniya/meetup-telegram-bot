@@ -8,6 +8,7 @@
         public string Description { get; set; }
 
         public SpeackerEntity Speacker { get; set; }
-        public ICollection<MeetupPresentationEntity> Presentations { get; set; }
+        public ICollection<MeetupEntity> Meetups { get; set; }
+        public ICollection<MeetupPresentationEntity> MeetupPresentations { get; set; }
     }
 }

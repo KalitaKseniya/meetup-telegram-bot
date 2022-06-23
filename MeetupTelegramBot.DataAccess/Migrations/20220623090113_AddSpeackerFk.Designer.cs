@@ -4,6 +4,7 @@ using MeetupTelegramBot.DataAccess.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MeetupTelegramBot.DataAccess.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20220623090113_AddSpeackerFk")]
+    partial class AddSpeackerFk
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,8 +46,6 @@ namespace MeetupTelegramBot.DataAccess.Migrations
                         .HasColumnType("time");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MeetupId");
 
                     b.ToTable("Feedbacks");
                 });
@@ -85,8 +85,6 @@ namespace MeetupTelegramBot.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.HasAlternateKey("MeetupId", "PresentationId");
-
-                    b.HasIndex("PresentationId");
 
                     b.ToTable("MeetupPresentations");
                 });
@@ -133,8 +131,6 @@ namespace MeetupTelegramBot.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MeetupPresentationId");
-
                     b.ToTable("Questions");
                 });
 
@@ -155,36 +151,6 @@ namespace MeetupTelegramBot.DataAccess.Migrations
                     b.ToTable("Speackers");
                 });
 
-            modelBuilder.Entity("MeetupTelegramBot.DataAccess.Entities.FeedbackEntity", b =>
-                {
-                    b.HasOne("MeetupTelegramBot.DataAccess.Entities.MeetupEntity", "Meetup")
-                        .WithMany("Feedbacks")
-                        .HasForeignKey("MeetupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Meetup");
-                });
-
-            modelBuilder.Entity("MeetupTelegramBot.DataAccess.Entities.MeetupPresentationEntity", b =>
-                {
-                    b.HasOne("MeetupTelegramBot.DataAccess.Entities.MeetupEntity", "Meetup")
-                        .WithMany("MeetupPresentations")
-                        .HasForeignKey("MeetupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MeetupTelegramBot.DataAccess.Entities.PresentationEntity", "Presentation")
-                        .WithMany("MeetupPresentations")
-                        .HasForeignKey("PresentationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Meetup");
-
-                    b.Navigation("Presentation");
-                });
-
             modelBuilder.Entity("MeetupTelegramBot.DataAccess.Entities.PresentationEntity", b =>
                 {
                     b.HasOne("MeetupTelegramBot.DataAccess.Entities.SpeackerEntity", "Speacker")
@@ -194,34 +160,6 @@ namespace MeetupTelegramBot.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Speacker");
-                });
-
-            modelBuilder.Entity("MeetupTelegramBot.DataAccess.Entities.QuestionEntity", b =>
-                {
-                    b.HasOne("MeetupTelegramBot.DataAccess.Entities.MeetupPresentationEntity", "MeetupPresentation")
-                        .WithMany("Questions")
-                        .HasForeignKey("MeetupPresentationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MeetupPresentation");
-                });
-
-            modelBuilder.Entity("MeetupTelegramBot.DataAccess.Entities.MeetupEntity", b =>
-                {
-                    b.Navigation("Feedbacks");
-
-                    b.Navigation("MeetupPresentations");
-                });
-
-            modelBuilder.Entity("MeetupTelegramBot.DataAccess.Entities.MeetupPresentationEntity", b =>
-                {
-                    b.Navigation("Questions");
-                });
-
-            modelBuilder.Entity("MeetupTelegramBot.DataAccess.Entities.PresentationEntity", b =>
-                {
-                    b.Navigation("MeetupPresentations");
                 });
 
             modelBuilder.Entity("MeetupTelegramBot.DataAccess.Entities.SpeackerEntity", b =>

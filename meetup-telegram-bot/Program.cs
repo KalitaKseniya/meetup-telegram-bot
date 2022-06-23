@@ -18,7 +18,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 ConfigurationManager configuration = builder.Configuration;
 builder.Services.AddDbContext<DatabaseContext>(opt =>
-                    opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+                    opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), 
+                        builder => builder.MigrationsAssembly("MeetupTelegramBot.DataAccess")));
 
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();

@@ -1,5 +1,6 @@
 ﻿using MeetupTelegramBot.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace MeetupTelegramBot.DataAccess.Contexts
 {
@@ -14,6 +15,11 @@ namespace MeetupTelegramBot.DataAccess.Contexts
 
         public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
         {
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
     }
 }

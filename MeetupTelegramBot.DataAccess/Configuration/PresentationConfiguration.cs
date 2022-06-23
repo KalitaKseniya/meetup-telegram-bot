@@ -8,7 +8,13 @@ namespace MeetupTelegramBot.DataAccess.Configuration
     {
         public void Configure(EntityTypeBuilder<PresentationEntity> builder)
         {
-                      
+            builder.HasKey(p => p.Id);
+
+            builder.HasOne(src => src.Speacker)
+                .WithMany(dest => dest.Presentations)
+                .HasForeignKey(src => src.SpeackerId);
+
+
             //builder.HasData(
             //    new PresentationEntity
             //    {
