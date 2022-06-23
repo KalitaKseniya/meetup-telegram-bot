@@ -4,6 +4,7 @@ using MeetupTelegramBot.DataAccess.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MeetupTelegramBot.DataAccess.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20220623130044_AddSeeding")]
+    partial class AddSeeding
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,7 +49,7 @@ namespace MeetupTelegramBot.DataAccess.Migrations
 
                     b.HasIndex("MeetupId");
 
-                    b.ToTable("Feedbacks", (string)null);
+                    b.ToTable("Feedbacks");
 
                     b.HasData(
                         new
@@ -78,7 +80,7 @@ namespace MeetupTelegramBot.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Meetups", (string)null);
+                    b.ToTable("Meetups");
 
                     b.HasData(
                         new
@@ -108,7 +110,7 @@ namespace MeetupTelegramBot.DataAccess.Migrations
 
                     b.HasIndex("PresentationId");
 
-                    b.ToTable("MeetupPresentations", (string)null);
+                    b.ToTable("MeetupPresentations");
 
                     b.HasData(
                         new
@@ -138,7 +140,7 @@ namespace MeetupTelegramBot.DataAccess.Migrations
 
                     b.HasIndex("SpeackerId");
 
-                    b.ToTable("Presentations", (string)null);
+                    b.ToTable("Presentations");
 
                     b.HasData(
                         new
@@ -171,7 +173,7 @@ namespace MeetupTelegramBot.DataAccess.Migrations
 
                     b.HasIndex("MeetupPresentationId");
 
-                    b.ToTable("Questions", (string)null);
+                    b.ToTable("Questions");
 
                     b.HasData(
                         new
@@ -198,7 +200,7 @@ namespace MeetupTelegramBot.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Speackers", (string)null);
+                    b.ToTable("Speackers");
 
                     b.HasData(
                         new

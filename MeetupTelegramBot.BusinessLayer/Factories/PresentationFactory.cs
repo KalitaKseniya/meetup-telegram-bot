@@ -30,9 +30,9 @@ namespace MeetupTelegramBot.BusinessLayer.Factories
             return dbEntity == null ? new PresentationEntity() : new PresentationEntity
             {
                 Description = dbEntity.Description,
-                SpeackerName = dbEntity.SpeackerName,
+                //SpeackerId = dbEntity.SpeackerName,
                 Title = dbEntity.Title,
-                IsDisplayed = dbEntity.IsDisplayed,
+                //IsDisplayed = dbEntity.IsDisplayed,
             };
         }
     }

@@ -63,11 +63,11 @@ public class PresentationService : IPresentationService
             }
         }
 
-        var oldPresentatnions = _presentationRepository.FindByCondition(p => p.IsDisplayed == true, true);
-        await oldPresentatnions.ForEachAsync(x => x.IsDisplayed = false);
+        //var oldPresentatnions = _presentationRepository.FindByCondition(p => p.IsDisplayed == true, true);
+        //await oldPresentatnions.ForEachAsync(x => x.IsDisplayed = false);
         
-        var newPresentations = _presentationRepository.FindByCondition(p => presentationsIdsToUpdate.Contains(p.Id), true);
-        await newPresentations.ForEachAsync(x => x.IsDisplayed = true);
+        //var newPresentations = _presentationRepository.FindByCondition(p => presentationsIdsToUpdate.Contains(p.Id), true);
+        //await newPresentations.ForEachAsync(x => x.IsDisplayed = true);
 
         await _presentationRepository.SaveChangesAsync();
     }

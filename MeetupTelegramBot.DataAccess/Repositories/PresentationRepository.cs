@@ -27,7 +27,7 @@ namespace MeetupTelegramBot.DataAccess.Repositories
 
         public async Task<List<PresentationEntity>> GetDisplayedAsync()
         {
-            return await base.FindByCondition(x => x.IsDisplayed == true, false)
+            return await base.FindByCondition(x => true,false)
                 .ToListAsync();
         }
 

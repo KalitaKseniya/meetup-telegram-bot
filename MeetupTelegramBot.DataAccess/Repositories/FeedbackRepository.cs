@@ -24,7 +24,7 @@ namespace MeetupTelegramBot.DataAccess.Repositories
         public async Task<List<FeedbackEntity>> GetAllAsync()
         {
             return await _databaseContext.Feedbacks
-                .Where(p => p.Date == DateTime.Today.Date)
+                //.Where(p => p.Date == DateTime.Today.Date)
                 .OrderByDescending(p => p.Time)
                 .ToListAsync();
         }

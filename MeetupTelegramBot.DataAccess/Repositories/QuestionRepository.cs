@@ -23,15 +23,15 @@ namespace MeetupTelegramBot.DataAccess.Repositories
         public async Task<List<QuestionEntity>> GetAllAsync()
         {
             return await _databaseContext.Questions
-                .OrderByDescending(q => q.Date)
-                .ThenByDescending(q => q.Time)
+                //.OrderByDescending(q => q.Date)
+                .OrderByDescending(q => q.Time)
                 .ToListAsync();
         }
 
         public async Task<List<QuestionEntity>> GetByPresentationIdAsync(Guid presentationId)
         {
-            return await _databaseContext.Questions.Where(q => q.PresentationId == presentationId)
-                .Where(q => q.Date == DateTime.Today.Date)
+            return await _databaseContext.Questions
+                //.Where(q => q.Date == DateTime.Today.Date)
                 .OrderByDescending(q => q.Time)
                 
                 .ToListAsync();
