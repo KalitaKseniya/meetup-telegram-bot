@@ -57,7 +57,8 @@ namespace MeetupTelegramBot.DataAccess.Contexts
             {
                 Id = new Guid("9EF9EADE-92A2-4277-94DF-45B802157EF3"),
                 Description = "Description",
-                SpeackerId = speacker.Id
+                SpeackerId = speacker.Id,
+                Title = "Title"
             };
             builder.Entity<PresentationEntity>().HasData(presentation);
             
