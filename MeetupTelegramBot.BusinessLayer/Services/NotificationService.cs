@@ -1,4 +1,5 @@
-﻿using MeetupTelegramBot.BusinessLayer.Factories;
+﻿using AutoMapper;
+using meetup_telegram_bot.SignalR.Models;
 using MeetupTelegramBot.BusinessLayer.Interfaces;
 using MeetupTelegramBot.BusinessLayer.Models.DTO;
 using MeetupTelegramBot.BusinessLayer.SignalR;
@@ -13,10 +14,13 @@ namespace MeetupTelegramBot.BusinessLayer.Services
     public class NotificationService : INotificationService
     {
         private readonly IHubContext<ChatHub, IChatHub> _hubContext;
+        private readonly IMapper _mapper;
 
-        public NotificationService(IHubContext<ChatHub, IChatHub> hubContext)
+        public NotificationService(IHubContext<ChatHub, IChatHub> hubContext,
+            IMapper mapper)
         {
             _hubContext = hubContext;
+            _mapper = mapper;
         }
 
         public async Task SendFeedbackAsync(FeedbackDTO feedbackEntity)
@@ -26,7 +30,7 @@ namespace MeetupTelegramBot.BusinessLayer.Services
                 throw new ArgumentNullException(nameof(feedbackEntity));
             }
 
-            var feedback = feedbackEntity.ToModel(); 
+            var feedback = _mapper.Map<FeedbackModel>(feedbackEntity); 
 
             await _hubContext.Clients.All.SendFeedback(feedback);
         }
@@ -38,7 +42,7 @@ namespace MeetupTelegramBot.BusinessLayer.Services
                 throw new ArgumentNullException(nameof(questionEntity));
             }
 
-            var question = questionEntity.ToModel(); 
+            var question = _mapper.Map<QuestionModel>(questionEntity); 
 
             await _hubContext.Clients.All.SendQuestion(question);
         }

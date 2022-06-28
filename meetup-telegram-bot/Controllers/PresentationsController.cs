@@ -1,5 +1,5 @@
-﻿using meetup_telegram_bot.SignalR.Models;
-using MeetupTelegramBot.BusinessLayer.Factories;
+﻿using AutoMapper;
+using meetup_telegram_bot.SignalR.Models;
 using MeetupTelegramBot.BusinessLayer.Interfaces;
 using MeetupTelegramBot.BusinessLayer.Models.DTO;
 using MeetupTelegramBot.BusinessLayer.Models.DTO.Request;
@@ -16,12 +16,18 @@ namespace meetup_telegram_bot.Controllers
         private readonly IQuestionService _questionService;
         private readonly IPresentationService _presentationService;
         private readonly ClientStatesService _clientStatesService;
+        private readonly IMapper _mapper;
 
-        public PresentationsController(IQuestionService questionService, ClientStatesService clientStates, IPresentationService presentationService)
+        public PresentationsController(IQuestionService questionService, 
+            ClientStatesService clientStates, 
+            IPresentationService presentationService,
+            IMapper mapper
+            )
         {
             _questionService = questionService;
             _presentationService = presentationService;
             _clientStatesService = clientStates;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -32,7 +38,7 @@ namespace meetup_telegram_bot.Controllers
         public async Task<List<PresentationModel>> GetPresentations()
         {
             var presentations = await _presentationService.GetAllAsync();
-            return presentations.ToModel();
+            return _mapper.Map<List<PresentationModel>>(presentations);
         }
       
         [HttpPost]

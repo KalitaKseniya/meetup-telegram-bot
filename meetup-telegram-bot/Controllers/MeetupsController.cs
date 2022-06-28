@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using meetup_telegram_bot.SignalR.Models;
-using MeetupTelegramBot.BusinessLayer.Factories;
 using MeetupTelegramBot.BusinessLayer.Interfaces;
 using MeetupTelegramBot.BusinessLayer.SignalR.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -42,7 +41,7 @@ namespace meetup_telegram_bot.Controllers
         {
             var questionsDto = await _questionService.GetByMeetupPresentationIdAsync(meetupId, presentationId);
 
-            return questionsDto.ToModel();
+            return _mapper.Map<List<QuestionModel>>(questionsDto);
         }
 
         /// <summary>
@@ -52,9 +51,9 @@ namespace meetup_telegram_bot.Controllers
         [HttpGet("{meetupId}/feedbacks")]
         public async Task<List<FeedbackModel>> GetFeedbacksByMeetup(Guid meetupId)
         {
-            var feedbacksFromDb = await _feedbackService.GetByMeetupIdAsync(meetupId);
+            var feedbacksDto = await _feedbackService.GetByMeetupIdAsync(meetupId);
 
-            return feedbacksFromDb.ToModel();
+            return _mapper.Map<List<FeedbackModel>>(feedbacksDto);
         }
 
         /// <summary>
@@ -76,7 +75,7 @@ namespace meetup_telegram_bot.Controllers
         public async Task<List<PresentationModel>> GetPresentationsForMeetup(Guid meetupId)
         {
             var presentations = await _presentationService.GetAllAsync();
-            return presentations.ToModel();
+            return _mapper.Map<List<PresentationModel>>(presentations);
         }
     }
 }
