@@ -7,6 +7,4 @@ public interface IPresentationService
 {
     Task<PresentationDTO> CreateAsync(PresentationForCreationDto entity);
     Task<List<PresentationDTO>> GetAllAsync();
-    Task<List<PresentationDTO>> GetDisplayedAsync();
-    Task UpdateDisplayedAsync(List<PresentationForUpdateDto> presentationsToUpdate);
 }

@@ -17,7 +17,6 @@ namespace meetup_telegram_bot.Controllers
         private readonly IPresentationService _presentationService;
         private readonly ClientStatesService _clientStatesService;
 
-
         public PresentationsController(IQuestionService questionService, ClientStatesService clientStates, IPresentationService presentationService)
         {
             _questionService = questionService;
@@ -26,36 +25,11 @@ namespace meetup_telegram_bot.Controllers
         }
 
         /// <summary>
-        /// Endpoint to get questions for a speceific presentations (by presentation id) 
-        /// </summary>
-        /// <param name="presentationId">Id of presentation (Guid) </param>
-        /// <returns></returns>
-        [HttpGet("{presentationId}/questions")]
-        public async Task<List<QuestionModel>> GetQuestionsByPresentationId(Guid presentationId)
-        {
-            var questionsDto = await _questionService.GetByPresentationIdAsync(presentationId);
-
-            return questionsDto.ToModel();
-        }
-
-        /// <summary>
-        /// Returns a list of all displayed presentations
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        public async Task<List<PresentationModel>> GetDisplayedPresentations()
-        {
-            var displayedPresentations = await _presentationService.GetDisplayedAsync();
-            return displayedPresentations.ToModel();
-        }
-
-        /// <summary>
         /// Returns a list of all presentations
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("all")]
-        public async Task<  List<PresentationModel>> GetPresentations()
+        public async Task<List<PresentationModel>> GetPresentations()
         {
             var presentations = await _presentationService.GetAllAsync();
             return presentations.ToModel();
@@ -75,14 +49,6 @@ namespace meetup_telegram_bot.Controllers
             var createdPresentation = await _presentationService.CreateAsync(presentationDto);
 
             return new ObjectResult(createdPresentation) { StatusCode = StatusCodes.Status201Created };
-        }
-
-        [HttpPut]
-        public async Task<IActionResult> UpdateDisplayedPresentations([FromBody] List<PresentationForUpdateDto> presentationsToUpdate)
-        {
-            await _presentationService.UpdateDisplayedAsync(presentationsToUpdate);
-            await _clientStatesService.SetPresentationsAsync();
-            return NoContent();
         }
     }
 }

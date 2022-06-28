@@ -7,4 +7,5 @@ public interface IFeedbackService
     Task CreateAsync(FeedbackDTO entity);
     Task<List<FeedbackDTO>> GetAllAsync();
     Task<FeedbackDTO> GetByIdAsync(Guid id);
+    Task<List<FeedbackDTO>> GetByMeetupIdAsync(Guid meetupId);
 }

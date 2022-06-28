@@ -22,12 +22,7 @@ namespace MeetupTelegramBot.DataAccess.Repositories
         public async Task<List<PresentationEntity>> GetAllAsync()
         {
             return await base.FindAll(false)
-                .ToListAsync();
-        }
-
-        public async Task<List<PresentationEntity>> GetDisplayedAsync()
-        {
-            return await base.FindByCondition(x => true,false)
+                .Include(s => s.Speacker)
                 .ToListAsync();
         }
 

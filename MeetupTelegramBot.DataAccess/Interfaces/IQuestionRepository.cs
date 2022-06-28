@@ -7,6 +7,6 @@ namespace MeetupTelegramBot.DataAccess.Interfaces
     {
         Task CreateAsync(QuestionEntity entity);
         Task<List<QuestionEntity>> GetAllAsync();
-        Task<List<QuestionEntity>> GetByPresentationIdAsync(Guid presentationId);
+        Task<List<QuestionEntity>> GetByMeetupPresentationAsync(Guid meetupId, Guid presentationId);
     }
 }

@@ -24,14 +24,24 @@ namespace MeetupTelegramBot.DataAccess.Repositories
         public async Task<List<FeedbackEntity>> GetAllAsync()
         {
             return await _databaseContext.Feedbacks
-                //.Where(p => p.Date == DateTime.Today.Date)
                 .OrderByDescending(p => p.Time)
                 .ToListAsync();
         }
 
         public async Task<FeedbackEntity> GetByIdAsync(Guid id)
         {
-            return await _databaseContext.Feedbacks.Where(f => f.Id == id).FirstOrDefaultAsync();
+            return await _databaseContext
+                .Feedbacks
+                .Where(f => f.Id == id)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<List<FeedbackEntity>> GetByMeetupIdAsync(Guid meetupId)
+        {
+            return await _databaseContext
+             .Feedbacks
+             .Where(f => f.MeetupId == meetupId)
+             .ToListAsync();
         }
     }
 }

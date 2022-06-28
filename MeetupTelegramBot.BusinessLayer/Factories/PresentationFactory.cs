@@ -14,8 +14,7 @@ namespace MeetupTelegramBot.BusinessLayer.Factories
                 Id = dbEntity.Id,
                 Description = dbEntity.Description,
                 SpeackerName = dbEntity.SpeackerName,
-                Title = dbEntity.Title,
-                IsDisplayed = dbEntity.IsDisplayed
+                Title = dbEntity.Title
             };
         }
 
@@ -30,9 +29,8 @@ namespace MeetupTelegramBot.BusinessLayer.Factories
             return dbEntity == null ? new PresentationEntity() : new PresentationEntity
             {
                 Description = dbEntity.Description,
-                //SpeackerId = dbEntity.SpeackerName,
+                SpeackerId = dbEntity.SpeackerId,
                 Title = dbEntity.Title,
-                //IsDisplayed = dbEntity.IsDisplayed,
             };
         }
     }

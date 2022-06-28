@@ -6,5 +6,5 @@ public interface IQuestionService
 {
     Task CreateAsync(QuestionDTO entity);
     Task<List<QuestionDTO>> GetAllAsync();
-    Task<List<QuestionDTO>> GetByPresentationIdAsync(Guid presentationId);
+    Task<List<QuestionDTO>> GetByMeetupPresentationIdAsync(Guid meetupId, Guid presentationId);
 }

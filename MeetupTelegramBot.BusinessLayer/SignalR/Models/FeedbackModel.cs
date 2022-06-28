@@ -5,6 +5,6 @@
         public string AuthorName { get; set; }
         public string Message { get; set; }
         public string FutureProposal { get; set; }
-        public DateTime Sent { get; set; }
+        public TimeSpan Sent { get; set; }
     }
 }

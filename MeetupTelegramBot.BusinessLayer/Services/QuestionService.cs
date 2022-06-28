@@ -27,9 +27,9 @@ public class QuestionService : IQuestionService
         return _mapper.Map<List<QuestionDTO>>(await _questionRepository.GetAllAsync());
     }
 
-    public async Task<List<QuestionDTO>> GetByPresentationIdAsync(Guid presentationId)
+    public async Task<List<QuestionDTO>> GetByMeetupPresentationIdAsync(Guid meetupId, Guid presentationId)
     {
-        var dbQuestions = await _questionRepository.GetByPresentationIdAsync(presentationId);
+        var dbQuestions = await _questionRepository.GetByMeetupPresentationAsync(meetupId, presentationId);
         return _mapper.Map<List<QuestionDTO>>(dbQuestions);
     }
 }

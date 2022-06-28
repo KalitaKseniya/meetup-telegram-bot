@@ -116,7 +116,7 @@ namespace meetup_telegram_bot.Controllers
             var feedback = new FeedbackDTO
             {
                 Id = Guid.NewGuid(),
-                Date = DateTime.Now,
+                //Date = DateTime.Now,
                 Time = DateTime.Now.TimeOfDay,
                 FutureProposal = message.Text,
                 GeneralFeedback = _clientStatesService.ClientStates[message.Chat.Id].FeedbackGeneralFeedback,
@@ -154,11 +154,9 @@ namespace meetup_telegram_bot.Controllers
                 var question = new QuestionDTO 
                 {
                     Id = Guid.NewGuid(),
-                    Date = DateTime.Now.Date,
                     Time = DateTime.Now.TimeOfDay,
                     Text = clientState.QuestionText,
                     AuthorName = AuthorNameGenerator.Generate(),
-                    PresentationId = presentationId,
                 };
                 await _questionService.CreateAsync(question);
                 await _notificationService.SendQuestionAsync(question);

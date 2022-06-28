@@ -8,5 +8,6 @@ namespace MeetupTelegramBot.DataAccess.Interfaces
         Task CreateAsync(FeedbackEntity entity);
         Task<List<FeedbackEntity>> GetAllAsync();
         Task<FeedbackEntity> GetByIdAsync(Guid id);
+        Task<List<FeedbackEntity>> GetByMeetupIdAsync(Guid meetupId);
     }
 }
