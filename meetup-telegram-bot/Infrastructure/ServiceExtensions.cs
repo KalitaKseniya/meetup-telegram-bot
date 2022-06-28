@@ -5,6 +5,7 @@ using MeetupTelegramBot.DataAccess.Interfaces;
 using MeetupTelegramBot.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 namespace meetup_telegram_bot.Infrastructure
 {
@@ -56,6 +57,10 @@ namespace meetup_telegram_bot.Infrastructure
                     Title = "Meetup Telegram Bot",
                     Description = "API for meetup bot",
                 });
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"; 
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile); 
+                c.IncludeXmlComments(xmlPath);
+                
             });
     }
 
