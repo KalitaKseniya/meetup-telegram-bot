@@ -23,6 +23,7 @@ namespace meetup_telegram_bot.Infrastructure
             services.AddScoped<IPresentationRepository, PresentationRepository>();
             services.AddScoped<ISpeackerRepository, SpeackerRepository>();
             services.AddScoped<IMeetupRepository, MeetupRepository>();
+            services.AddScoped<IMeetupPresentationRepository, MeetupPresentationRepository>();
         }
 
         public static void RegisterServices(this IServiceCollection services)

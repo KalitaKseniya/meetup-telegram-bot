@@ -24,7 +24,8 @@ namespace meetup_telegram_bot.Controllers
         private const string TelegramBotToken = "TelegramBotToken";
         private const string AdminUserName = "AdminUserName";
         private const string AdminChatId = "AdminChatId";
-        
+
+        private readonly Guid currentMeetupId;
         private readonly string adminUserName;
         private readonly long adminChatId;
 
@@ -34,6 +35,9 @@ namespace meetup_telegram_bot.Controllers
             INotificationService notificationService,
             IFeedbackService feedbackService, IQuestionService questionService)
         {
+            //ToDO: get from db?
+            currentMeetupId = new Guid("7ef9eade-92a2-4277-94df-45b802157ef3");
+
             var token = configuration.GetSection("environmentVariables").GetValue<string>(TelegramBotToken);
             if (string.IsNullOrEmpty(token))
             {
@@ -120,7 +124,8 @@ namespace meetup_telegram_bot.Controllers
                 Time = DateTime.Now.TimeOfDay,
                 FutureProposal = message.Text,
                 GeneralFeedback = _clientStatesService.ClientStates[message.Chat.Id].FeedbackGeneralFeedback,
-                AuthorName = AuthorNameGenerator.Generate()
+                AuthorName = AuthorNameGenerator.Generate(),
+                MeetupId = currentMeetupId
             };
             try
             {
@@ -157,6 +162,8 @@ namespace meetup_telegram_bot.Controllers
                     Time = DateTime.Now.TimeOfDay,
                     Text = clientState.QuestionText,
                     AuthorName = AuthorNameGenerator.Generate(),
+                    MeetupId = currentMeetupId,
+                    PresentationId = presentationId
                 };
                 await _questionService.CreateAsync(question);
                 await _notificationService.SendQuestionAsync(question);

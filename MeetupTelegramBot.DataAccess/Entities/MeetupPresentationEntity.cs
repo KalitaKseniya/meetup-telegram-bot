@@ -9,6 +9,5 @@
         public PresentationEntity Presentation { get; set; }
         public MeetupEntity Meetup { get; set; }
         public ICollection<QuestionEntity> Questions { get; set; }
-
     }
 }

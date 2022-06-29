@@ -7,4 +7,5 @@ public class FeedbackDTO
     public TimeSpan Time { get; set; }
     public string GeneralFeedback { get; set; }
     public string FutureProposal { get; set; }
+    public Guid MeetupId { get; set; }
 }

@@ -6,5 +6,6 @@ public class QuestionDTO
     public TimeSpan Time { get; set; }
     public string Text { get; set; }
     public string AuthorName { get; set; }
-    public Guid MeetupPresentationId { get; set; }
+    public Guid MeetupId { get; set; }
+    public Guid PresentationId { get; set; }
 }
